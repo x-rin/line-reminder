@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"log"
-	"hyakkiyako/app/resources"
 )
 
 func HelloResource(w http.ResponseWriter, r *http.Request) {
