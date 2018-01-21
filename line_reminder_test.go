@@ -32,7 +32,7 @@ var _ = Describe("LineReminder", func() {
 			It("should access POST /api/v1/report ", func() {
 				Expect(w.Code).To(Equal(200))
 				//TODO: PostReportの実装次第変更を加えること
-				Expect(w.Body.String()).To(Equal("Post Report!"))
+				Expect(w.Body.String()).To(Equal("Post Reminder"))
 			})
 		})
 	})

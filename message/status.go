@@ -7,13 +7,15 @@ import (
 	"strings"
 )
 
-func GetStatus(c *gin.Context) {
+func (m *message) GetStatus(c *gin.Context) {
 	target := c.Param("id")
 	status := os.Getenv(strings.ToUpper(target) + "_STATUS")
 
 	if status == "failure" {
 		//TODO: PostReportが実装され次第パラメータをセットしてあげる。
-		PostReport(c)
+		messageType := "hogehoge"
+		text := "fugafuga"
+		NewMessage(messageType, text).PostReminder(c)
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"status": status,
