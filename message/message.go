@@ -1,17 +1,16 @@
 package message
 
 import (
-	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
-func GetMessage (w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func GetMessage (c *gin.Context) {
 	message := "Get Message!"
-	json.NewEncoder(w).Encode(message)
+	c.String(http.StatusOK, "%s", message)
 }
 
-func PostMessage (w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	message := "Posted Message: " + r.PostFormValue("body")
-	json.NewEncoder(w).Encode(message)
+func PostMessage (c *gin.Context) {
+	message := "Posted Message: " + c.PostForm("body")
+	c.String(http.StatusOK, "%s", message)
 }
