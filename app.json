@@ -1,12 +1,12 @@
 {
-  "name": "Start on Heroku: Go",
-  "description": "Go Getting Started Example App",
+  "name": "line-reminder",
+  "description": "reminder bot than post line",
   "keywords": [
-    "getting-started",
+    "line",
     "go",
-    "sample",
-    "example"
+    "heroku",
+    "reminder"
   ],
-  "website": "http://github.com/heroku/go-getting-started",
-  "repository": "http://github.com/heroku/go-getting-started"
+  "website": "https://github.com/kutsuzawa/line-reminder",
+  "repository": "https://github.com/kutsuzawa/line-reminder"
 }
