@@ -1,26 +1,23 @@
 package main
 
 import (
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"log"
+	"os"
+	. "github.com/kutsuzawa/line-reminder/message"
 )
-
-func HelloResource(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello Server\n")
-}
 
 //リクエストに応じたfuncを定義
 func main() {
 	//routingはここ
-	http.HandleFunc("/", HelloResource)
-	//この下にrouting定義を増やしていけばいい感じな気がする。
+	//reference: https://godoc.org/github.com/julienschmidt/httprouter
+	router := httprouter.New()
+	router.GET("/api/v1/messages", GetMessage)
+	router.POST("/api/v1/messages", PostMessage)
 
 	log.Printf("Start Go HTTP Server")
 
-	//port監視と実行
 	port := os.Getenv("PORT")
-	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	log.Fatal(http.ListenAndServe(":" + port, router))
 }
