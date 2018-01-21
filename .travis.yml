@@ -1,0 +1,17 @@
+language: go
+
+go:
+  - 1.9.x
+
+before_install:
+  - go get github.com/golang/dep/...
+  - go get -u github.com/onsi/ginkgo/ginkgo
+  - go get -u github.com/onsi/gomega/...
+install:
+  - $GOPATH/bin/dep ensure
+script:
+  - $GOPATH/bin/ginkgo -r -v
+
+addons:
+  code_climate:
+    repo_token: 2bcb9d15fc407776482b99bae1954a189a703e39511fa47353519f5275497204
