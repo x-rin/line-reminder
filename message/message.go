@@ -8,6 +8,7 @@ type Message interface {
 	PostReminder(c *gin.Context)
 	PostReport(c *gin.Context)
 	GetStatus(c *gin.Context)
+	Check(c *gin.Context)
 }
 
 // Reference: https://developers.line.me/ja/docs/messaging-api/reference/#message-objects

@@ -14,10 +14,22 @@
   version = "v1.2"
 
 [[projects]]
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "13f360950a79f5864a972c786a10a50e44b69541"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+
+[[projects]]
+  name = "github.com/line/line-bot-sdk-go"
+  packages = ["linebot"]
+  revision = "3a7d66f5efce6ac202f650134609f9d6d163a640"
+  version = "1.0.0"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -46,7 +58,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["html","html/atom","html/charset"]
+  packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
   revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
 
 [[projects]]
@@ -76,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1f1634b1d3aeb7348f015d0b8836c6058ba5c628a832d128a8421973cb20072c"
+  inputs-digest = "1698ee11bbb24a7e8d4f7ca6ed58c740443afdea4d35c9d6cb6d81aaf935f5ef"
   solver-name = "gps-cdcl"
   solver-version = 1
