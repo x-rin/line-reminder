@@ -14,8 +14,9 @@ func main() {
 
 	v1 := router.Group("/api/v1")
 	{
-		v1.GET("messages", GetMessage)
-		v1.POST("messages", PostMessage)
+		v1.POST("reminder", PostReminder)
+		v1.POST("report", PostReport)
+		v1.GET("status", GetStatus)
 	}
 
 	log.Printf("Start Go HTTP Server")
