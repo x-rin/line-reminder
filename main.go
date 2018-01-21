@@ -11,8 +11,12 @@ import (
 func main() {
 	//routingはここ
 	router := gin.Default()
-	router.GET("/api/v1/messages", GetMessage)
-	router.POST("/api/v1/messages", PostMessage)
+
+	v1 := router.Group("/api/v1")
+	{
+		v1.GET("messages", GetMessage)
+		v1.POST("messages", PostMessage)
+	}
 
 	log.Printf("Start Go HTTP Server")
 

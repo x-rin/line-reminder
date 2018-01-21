@@ -12,5 +12,5 @@ func GetMessage (c *gin.Context) {
 
 func PostMessage (c *gin.Context) {
 	message := "Posted Message: " + c.PostForm("body")
-	c.String(http.StatusOK, "%s", message)
+	c.JSON(http.StatusOK, gin.H{"message": message})
 }
