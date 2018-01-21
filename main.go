@@ -1,26 +1,25 @@
 package main
 
 import (
-	"net/http"
 	"log"
+	"os"
+	. "github.com/kutsuzawa/line-reminder/message"
+	"github.com/gin-gonic/gin"
 )
-
-func HelloResource(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello Server\n")
-}
 
 //リクエストに応じたfuncを定義
 func main() {
 	//routingはここ
-	http.HandleFunc("/", HelloResource)
-	//この下にrouting定義を増やしていけばいい感じな気がする。
+	router := gin.Default()
+
+	v1 := router.Group("/api/v1")
+	{
+		v1.GET("messages", GetMessage)
+		v1.POST("messages", PostMessage)
+	}
 
 	log.Printf("Start Go HTTP Server")
 
-	//port監視と実行
 	port := os.Getenv("PORT")
-	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	router.Run(":" + port)
 }
