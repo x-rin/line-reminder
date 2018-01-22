@@ -14,4 +14,4 @@ script:
 
 addons:
   code_climate:
-    repo_token: 2bcb9d15fc407776482b99bae1954a189a703e39511fa47353519f5275497204
+    repo_token: $CODECLIMATE_COVERAGE_TOKEN

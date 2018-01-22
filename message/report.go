@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PostReport (c *gin.Context) {
+func (m *message) PostReport (c *gin.Context) {
 	message := "Post Report!"
 	c.String(http.StatusOK, "%s", message)
 }
