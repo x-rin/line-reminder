@@ -9,13 +9,14 @@ import (
 )
 
 func PostReminder (c *gin.Context) {
-	source := c.PostForm("id")
-	err := PostMessage(source+": "+os.Getenv("REMINDER_MESSAGE"))
+	target := c.PostForm("id")
+	err := PostMessage(target+": "+os.Getenv("REMINDER_MESSAGE"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statusKey := strings.ToUpper(source) + "_STATUS"
+	statusKey := strings.ToUpper(target) + "_STATUS"
 	os.Setenv(statusKey, "false")
+	log.Println("reminder: env key: " + statusKey)
 	c.JSON(http.StatusOK, gin.H{
 		"status": os.Getenv(statusKey),
 	})

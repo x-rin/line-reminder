@@ -15,6 +15,7 @@ func PostReport(c *gin.Context) {
 		log.Fatal(err.Error())
 	}
 	statusKey := strings.ToUpper(source) + "_STATUS"
+	log.Println("report: env key: " + statusKey)
 	os.Setenv(statusKey, "true")
 	c.JSON(http.StatusOK, gin.H{
 		"status": os.Getenv(statusKey),
