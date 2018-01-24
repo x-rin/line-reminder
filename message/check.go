@@ -9,7 +9,7 @@ import (
 )
 
 func Check(c *gin.Context) {
-	config := lineConfig{}
+	config := NewLineConfig()
 	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
 	received, err := bot.ParseRequest(c.Request)
 	if err != nil {
@@ -23,8 +23,4 @@ func Check(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 	})
-}
-
-func GetGroupId() {
-
 }
