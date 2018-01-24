@@ -9,25 +9,26 @@ import (
 	"net/http/httptest"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"io"
 )
 
 var _ = Describe("LineReminder", func() {
 
 	Describe("GET: /api/v1/status", func() {
 
-		Context("status is success", func() {
-			router, w, req := StatusRouterInit()
-			os.Setenv("TEST_STATUS", "success")
+		Context("status is true", func() {
+			router, w, req := RouterInit("GET", "/api/v1/status/test", nil)
+			os.Setenv("TEST_STATUS", "true")
 			router.ServeHTTP(w, req)
-			It("should return success status", func() {
+			It("should return true status", func() {
 				Expect(w.Code).To(Equal(200))
-				Expect(w.Body.String()).To(Equal("{\"status\":\"success\"}"))
+				Expect(w.Body.String()).To(Equal("{\"status\":\"true\"}"))
 			})
 		})
 
-		Context("status is failure", func() {
-			router, w, req := StatusRouterInit()
-			os.Setenv("TEST_STATUS", "failure")
+		Context("status is false", func() {
+			router, w, req := RouterInit("GET", "/api/v1/status/test", nil)
+			os.Setenv("TEST_STATUS", "false")
 			router.ServeHTTP(w, req)
 			It("should access POST /api/v1/report ", func() {
 				Expect(w.Code).To(Equal(200))
@@ -38,9 +39,9 @@ var _ = Describe("LineReminder", func() {
 	})
 })
 
-func StatusRouterInit () (*gin.Engine, *httptest.ResponseRecorder, *http.Request){
+func RouterInit (method string, url string, body io.Reader) (*gin.Engine, *httptest.ResponseRecorder, *http.Request){
 	router := SetupRouter()
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/status/test", nil)
+	req, _ := http.NewRequest(method, url, body)
 	return router, w, req
 }
