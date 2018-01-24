@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	. "github.com/kutsuzawa/line-reminder/message"
+	. "github.com/kutsuzawa/line-reminder/api"
 	"log"
 	"os"
 )
