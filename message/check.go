@@ -3,8 +3,8 @@ package message
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/go/src/pkg/net/http"
-	"log"
 	"github.com/line/line-bot-sdk-go/linebot"
+	"log"
 	"os"
 )
 
@@ -18,7 +18,7 @@ func (m *message) Check(c *gin.Context) {
 	}
 
 	for _, event := range received {
-		log.Println(event.Source.GroupID)
+		log.Println("Group ID: " + event.Source.GroupID)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
