@@ -8,9 +8,10 @@ import (
 )
 
 func SetupRouter() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
 	v1 := router.Group("/api/v1/")
 	{
+		v1.Use(GetAccessToken)
 		v1.POST("reminder", PostReminder)
 		v1.POST("report", PostReport)
 		v1.GET("status/:id", GetStatus)

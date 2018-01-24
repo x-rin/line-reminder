@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"os"
-	"log"
 )
 
 func GetStatus(c *gin.Context) {
@@ -21,10 +20,6 @@ func GetStatus(c *gin.Context) {
 	//		"status": status,
 	//	})
 	//}
-
-	config, _ := GetAccessToken()
-	log.Println(config)
-
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": status,

@@ -7,9 +7,10 @@ import (
 	"strings"
 	"encoding/json"
 	"log"
+	"github.com/gin-gonic/gin"
 )
 
-func GetAccessToken() (*lineConfig, error){
+func GetAccessToken(c *gin.Context) {
 
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
@@ -42,7 +43,5 @@ func GetAccessToken() (*lineConfig, error){
 		log.Fatal(err)
 	}
 
-	log.Println("AccessToken: " + config.AccessToken)
-	log.Println("TokenType: " + config.TokenType)
-	return config, nil
+	return
 }
