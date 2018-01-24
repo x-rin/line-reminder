@@ -9,7 +9,6 @@ import (
 )
 
 func Check(c *gin.Context) {
-	var groupId string
 	config := lineConfig{}
 	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
 	received, err := bot.ParseRequest(c.Request)
@@ -18,11 +17,10 @@ func Check(c *gin.Context) {
 	}
 
 	for _, event := range received {
-		groupId = event.Source.GroupID
+		log.Println("groupId: " + event.Source.GroupID)
 	}
 
-	log.Println("groupId: " + groupId)
 	c.JSON(http.StatusOK, gin.H{
-		"group_id": groupId,
+		"status": "ok",
 	})
 }
