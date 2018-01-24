@@ -24,3 +24,7 @@ func Check(c *gin.Context) {
 		"status": "ok",
 	})
 }
+
+func GetGroupId() {
+
+}
