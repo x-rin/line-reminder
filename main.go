@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
+	. "github.com/kutsuzawa/line-reminder/message"
 	"log"
 	"os"
-	. "github.com/kutsuzawa/line-reminder/message"
-	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
@@ -15,6 +15,7 @@ func SetupRouter() *gin.Engine {
 		v1.POST("reminder", NewMessage(messageType, text).PostReminder)
 		v1.POST("report", NewMessage(messageType, text).PostReport)
 		v1.GET("status/:id", NewMessage(messageType, text).GetStatus)
+		v1.POST("check", NewMessage(messageType, text).Check)
 	}
 	return router
 }
