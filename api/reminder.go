@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/line/line-bot-sdk-go/linebot"
 	"os"
 	"log"
 	"strings"
