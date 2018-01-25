@@ -5,11 +5,6 @@ import (
 	"os"
 )
 
-type TextMessage struct {
-	Type	string 	`json: type`
-	Text	string  `json: text`
-}
-
 func PostMessage(message string) error{
 	config := NewLineConfig()
 	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
