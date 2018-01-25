@@ -22,3 +22,16 @@ func PostMessage(message string) error{
 	}
 	return nil
 }
+
+func ReplyMessage(token string, messsage string) error {
+	config := NewLineConfig()
+	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	if _, err := bot.ReplyMessage(token, linebot.NewTextMessage(messsage)).Do(); err != nil {
+		return err
+	}
+	return nil
+}

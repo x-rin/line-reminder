@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"encoding/json"
-	"strings"
 )
 
 func Check(c *gin.Context) {
@@ -32,8 +31,8 @@ func Check(c *gin.Context) {
 			})
 		}
 
-		if strings.Contains(textMsg.Text, os.Getenv("REPORT_MESSAGE")){
-			err := PostMessage(os.Getenv("REPLY_SUCCESS"))
+		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
+			err := ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
 				log.Fatal(err.Error())
 			}
