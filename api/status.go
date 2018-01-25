@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -14,11 +15,14 @@ func GetStatus(c *gin.Context) {
 	status := os.Getenv(statusKey)
 	statusFlag, _ := strconv.ParseBool(status)
 
-	if statusFlag {
-		c.JSON(http.StatusOK, gin.H{
-			"status": status,
-		})
-	} else {
-		PostReminder(c)
+	if !statusFlag {
+		err := PostMessage(os.Getenv("STATUS_MESSAGE"))
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": status,
+	})
 }
