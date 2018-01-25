@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"encoding/json"
-	"strings"
 )
 
 func Check(c *gin.Context) {
