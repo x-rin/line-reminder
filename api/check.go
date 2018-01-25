@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"encoding/json"
+	"strings"
 )
 
 func Check(c *gin.Context) {
@@ -20,23 +21,21 @@ func Check(c *gin.Context) {
 
 	for _, event := range received {
 		log.Println("groupId: " + event.Source.GroupID)
-		if event.Source.UserID == os.Getenv("TARGET_ID") {
 
-			textMsg := new(TextMessage)
-			byteMsg, _ := event.Message.MarshalJSON()
-			if err := json.Unmarshal(byteMsg, textMsg); err != nil {
-				//画像メッセージの場合もあるからただエラーを出力するだけにする
-				log.Println(err.Error())
-				c.JSON(http.StatusOK, gin.H{
-					"status": "false",
-				})
-			}
+		textMsg := new(TextMessage)
+		byteMsg, _ := event.Message.MarshalJSON()
+		if err := json.Unmarshal(byteMsg, textMsg); err != nil {
+			//画像メッセージの場合もあるからただエラーを出力するだけにする
+			log.Println(err.Error())
+			c.JSON(http.StatusOK, gin.H{
+				"status": "false",
+			})
+		}
 
-			if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
-				err := PostMessage(os.Getenv("REPLY_SUCCESS"))
-				if err != nil {
-					log.Fatal(err.Error())
-				}
+		if strings.Contains(textMsg.Text, os.Getenv("REPORT_MESSAGE")){
+			err := PostMessage(os.Getenv("REPLY_SUCCESS"))
+			if err != nil {
+				log.Fatal(err.Error())
 			}
 		}
 	}
