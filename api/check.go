@@ -18,6 +18,7 @@ func Check(c *gin.Context) {
 
 	for _, event := range received {
 		log.Println("groupId: " + event.Source.GroupID)
+		log.Println("satuka: " + event.Source.UserID)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
