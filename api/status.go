@@ -1,16 +1,17 @@
-package message
+package api
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func GetStatus(c *gin.Context) {
-	target := c.Param("id")
-	status := os.Getenv(strings.ToUpper(target) + "_STATUS")
+	target := c.PostForm("id")
+	statusKey := strings.ToUpper(target) + "_STATUS"
+	status := os.Getenv(statusKey)
 	statusFlag, _ := strconv.ParseBool(status)
 
 	if statusFlag {

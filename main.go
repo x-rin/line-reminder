@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	. "github.com/kutsuzawa/line-reminder/message"
+	. "github.com/kutsuzawa/line-reminder/api"
 	"log"
 	"os"
 )
@@ -13,7 +13,7 @@ func SetupRouter() *gin.Engine {
 	{
 		v1.POST("reminder", PostReminder)
 		v1.POST("report", PostReport)
-		v1.GET("status/:id", GetStatus)
+		v1.POST("status", GetStatus)
 		v1.POST("check", Check)
 	}
 	return router
