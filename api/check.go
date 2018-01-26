@@ -39,7 +39,5 @@ func Check(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	Response(c, "ok")
 }

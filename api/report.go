@@ -16,7 +16,5 @@ func PostReport(c *gin.Context) {
 	}
 	statusKey := strings.ToUpper(source) + "_STATUS"
 	os.Setenv(statusKey, "true")
-	c.JSON(http.StatusOK, gin.H{
-		"status": os.Getenv(statusKey),
-	})
+	Response(c, os.Getenv(statusKey))
 }
