@@ -1,3 +1,4 @@
+
 package api
 
 import (
@@ -8,12 +9,17 @@ import (
 )
 
 func PostReport(c *gin.Context) {
-	source := c.PostForm("id")
+	envKey := c.PostForm("id")
+	source, err := GetProfile(envKey)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	reportErr := PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
 	if reportErr != nil {
 		log.Fatal(reportErr.Error())
 	}
-	statusKey := strings.ToUpper(source) + "_STATUS"
+	statusKey := strings.ToUpper(envKey) + "_STATUS"
 	os.Setenv(statusKey, "true")
 
 	replyErr := PostMessage(os.Getenv("REPLY_SUCCESS"))
