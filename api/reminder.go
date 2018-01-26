@@ -8,12 +8,18 @@ import (
 )
 
 func PostReminder(c *gin.Context) {
-	target := c.PostForm("id")
-	err := PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
+	envKey := c.PostForm("id")
+	target, err := GetProfile(envKey)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	statusKey := strings.ToUpper(target) + "_STATUS"
+
+	rmdErr := PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
+	if rmdErr != nil {
+		log.Fatal(rmdErr.Error())
+	}
+
+	statusKey := strings.ToUpper(envKey) + "_STATUS"
 	os.Setenv(statusKey, "false")
 	Response(c, os.Getenv(statusKey))
 }
