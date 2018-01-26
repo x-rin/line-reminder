@@ -9,13 +9,18 @@ import (
 )
 
 func GetStatus(c *gin.Context) {
-	target := c.PostForm("id")
-	statusKey := strings.ToUpper(target) + "_STATUS"
+	envKey := c.PostForm("id")
+	target, err := GetProfile(envKey)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	statusKey := strings.ToUpper(envKey) + "_STATUS"
 	status := os.Getenv(statusKey)
 	statusFlag, _ := strconv.ParseBool(status)
 
 	if !statusFlag {
-		err := PostMessage(os.Getenv("STATUS_MESSAGE"))
+		err := PostMessage(target + ": " + os.Getenv("STATUS_MESSAGE"))
 		if err != nil {
 			log.Println(err.Error())
 		}
