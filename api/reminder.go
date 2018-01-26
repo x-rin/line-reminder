@@ -16,7 +16,5 @@ func PostReminder(c *gin.Context) {
 	}
 	statusKey := strings.ToUpper(target) + "_STATUS"
 	os.Setenv(statusKey, "false")
-	c.JSON(http.StatusOK, gin.H{
-		"status": os.Getenv(statusKey),
-	})
+	Response(c, os.Getenv(statusKey))
 }

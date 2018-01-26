@@ -22,7 +22,5 @@ func GetStatus(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": status,
-	})
+	Response(c, status)
 }

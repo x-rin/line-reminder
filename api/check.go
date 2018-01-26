@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"encoding/json"
+	"strings"
 )
 
 func Check(c *gin.Context) {
@@ -32,6 +33,8 @@ func Check(c *gin.Context) {
 		}
 
 		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
+			statusKey := strings.ToUpper(event.Source.UserID) + "_STATUS"
+			os.Setenv(statusKey, "true")
 			err := ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
 				log.Fatal(err.Error())
@@ -39,7 +42,5 @@ func Check(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	Response(c, "ok")
 }
