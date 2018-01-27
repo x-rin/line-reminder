@@ -18,7 +18,7 @@ func PostReminder(c *gin.Context) {
 		log.Fatal(rmdErr.Error())
 	}
 
-	status := setStatus(id, "false")
+	status := SetStatus(id, "false")
 
 	Response(c, status)
 }

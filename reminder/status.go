@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
-func getStatus(id string) (bool, string, error) {
+func GetStatus(id string) (bool, string, error) {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	status := os.Getenv(statusKey)
 	statusFlag, err := strconv.ParseBool(status)
-	return statusFlag, status, err
+	if err != nil {
+		return false, "", err
+	}
+	return statusFlag, status, nil
 }
 
-func setStatus(id string, status string) string {
+func SetStatus(id string, status string) string {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	os.Setenv(statusKey, status)
 	changedStatus := os.Getenv(statusKey)

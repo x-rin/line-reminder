@@ -18,7 +18,7 @@ func PostReport(c *gin.Context) {
 		log.Fatal(reportErr.Error())
 	}
 
-	status := setStatus(id, "true")
+	status := SetStatus(id, "true")
 
 	replyErr := PostMessage(os.Getenv("REPLY_SUCCESS"))
 	if replyErr != nil {

@@ -13,7 +13,7 @@ func Check(c *gin.Context) {
 		log.Fatal(pErr.Error())
 	}
 
-	statusFlag, status, sErr := getStatus(id)
+	statusFlag, status, sErr := GetStatus(id)
 	if sErr != nil {
 		log.Fatal(sErr.Error())
 	}
