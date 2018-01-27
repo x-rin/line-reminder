@@ -9,7 +9,8 @@ import (
 )
 
 func GetWebHook(c *gin.Context) {
-	received, err := ReceiveEvent(c.Request)
+	config := NewLineConfig()
+	received, err := config.ReceiveEvent(c.Request)
 	if err != nil {
 		log.Println(err)
 	}
@@ -28,7 +29,7 @@ func GetWebHook(c *gin.Context) {
 
 		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
 			status = SetStatus(event.Source.UserID, "true")
-			err := ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
+			err := config.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
 				log.Fatal(err.Error())
 			}

@@ -10,10 +10,18 @@ import (
 	"strings"
 )
 
+type LineService interface {
+	PostMessage(message string) error
+	ReplyMessage(token string, message string) error
+	GetProfile(id string) (string, error)
+}
+
 type LineConfig struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+	ChannelSecret string
+
 }
 
 func NewLineConfig() *LineConfig {
@@ -42,16 +50,23 @@ func NewLineConfig() *LineConfig {
 	}
 	defer res.Body.Close()
 
-	config := new(LineConfig)
+	authConfig := new(LineConfig)
 
-	if err := json.NewDecoder(res.Body).Decode(config); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(authConfig); err != nil {
 		log.Fatal(err)
+	}
+
+	config := &LineConfig{
+		AccessToken: authConfig.AccessToken,
+		ExpiresIn: authConfig.ExpiresIn,
+		TokenType: authConfig.TokenType,
+		ChannelSecret: os.Getenv("CHANNEL_SECRET"),
 	}
 
 	return config
 }
 
-func PostMessage(message string) error {
+func (con *LineConfig) PostMessage(message string) error {
 	config := NewLineConfig()
 	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
 	if err != nil {
@@ -64,9 +79,8 @@ func PostMessage(message string) error {
 	return nil
 }
 
-func ReplyMessage(token string, message string) error {
-	config := NewLineConfig()
-	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+func (con *LineConfig) ReplyMessage(token string, message string) error {
+	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -77,9 +91,8 @@ func ReplyMessage(token string, message string) error {
 	return nil
 }
 
-func GetProfile(id string) (string, error) {
-	config := NewLineConfig()
-	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+func (con *LineConfig) GetProfile(id string) (string, error) {
+	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
 	if err != nil {
 		return "", err
 	}
@@ -91,9 +104,8 @@ func GetProfile(id string) (string, error) {
 	return res.DisplayName, nil
 }
 
-func ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
-	config := NewLineConfig()
-	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+func (con *LineConfig) ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
+	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
 	if err != nil {
 		return []linebot.Event{}, err
 	}

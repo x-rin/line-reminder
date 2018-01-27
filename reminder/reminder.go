@@ -8,12 +8,13 @@ import (
 
 func PostReminder(c *gin.Context) {
 	id := c.PostForm("id")
-	target, err := GetProfile(id)
+	config := NewLineConfig()
+	target, err := config.GetProfile(id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	rmdErr := PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
+	rmdErr := config.PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
 	if rmdErr != nil {
 		log.Fatal(rmdErr.Error())
 	}
