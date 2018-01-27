@@ -4,21 +4,20 @@ import (
 	"os"
 )
 
-func PostReport(id string) (string, error) {
-	config := NewLineConfig()
-	source, err := config.GetProfile(id)
+func (con *LineConfig) PostReport(id string) (string, error) {
+	source, err := con.GetProfile(id)
 	if err != nil {
 		return "", nil
 	}
 
-	rptErr := config.PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
+	rptErr := con.PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
 	if rptErr != nil {
 		return "", rptErr
 	}
 
 	status := SetStatus(id, "true")
 
-	rpyErr := config.PostMessage(os.Getenv("REPLY_SUCCESS"))
+	rpyErr := con.PostMessage(os.Getenv("REPLY_SUCCESS"))
 	if rpyErr != nil {
 		return "", rpyErr
 	}

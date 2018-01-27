@@ -14,6 +14,8 @@ type LineService interface {
 	PostMessage(message string) error
 	ReplyMessage(token string, message string) error
 	GetProfile(id string) (string, error)
+	PostReport(id string) (string, error)
+	PostReminder(id string) (string, error)
 }
 
 type LineConfig struct {

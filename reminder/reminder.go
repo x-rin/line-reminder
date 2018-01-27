@@ -4,14 +4,13 @@ import (
 	"os"
 )
 
-func PostReminder(id string) (string, error) {
-	config := NewLineConfig()
-	target, err := config.GetProfile(id)
+func (con *LineConfig) PostReminder(id string) (string, error) {
+	target, err := con.GetProfile(id)
 	if err != nil {
 		return "", err
 	}
 
-	rmdErr := config.PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
+	rmdErr := con.PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
 	if rmdErr != nil {
 		return "", rmdErr
 	}

@@ -8,9 +8,8 @@ import (
 	"os"
 )
 
-func GetWebHook(req *http.Request) (string, error) {
-	config := NewLineConfig()
-	received, err := config.ReceiveEvent(req)
+func (con *LineConfig) GetWebHook(req *http.Request) (string, error) {
+	received, err := con.ReceiveEvent(req)
 	if err != nil {
 		return "", err
 	}
@@ -29,7 +28,7 @@ func GetWebHook(req *http.Request) (string, error) {
 
 		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
 			status = SetStatus(event.Source.UserID, "true")
-			err := config.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
+			err := con.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
 				return "", err
 			}

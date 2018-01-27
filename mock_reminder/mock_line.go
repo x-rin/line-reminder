@@ -68,3 +68,29 @@ func (m *MockLineService) GetProfile(id string) (string, error) {
 func (mr *MockLineServiceMockRecorder) GetProfile(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockLineService)(nil).GetProfile), id)
 }
+
+// PostReport mocks base method
+func (m *MockLineService) PostReport(id string) (string, error) {
+	ret := m.ctrl.Call(m, "PostReport", id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PostReport indicates an expected call of PostReport
+func (mr *MockLineServiceMockRecorder) PostReport(id interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostReport", reflect.TypeOf((*MockLineService)(nil).PostReport), id)
+}
+
+// PostReminder mocks base method
+func (m *MockLineService) PostReminder(id string) (string, error) {
+	ret := m.ctrl.Call(m, "PostReminder", id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PostReminder indicates an expected call of PostReminder
+func (mr *MockLineServiceMockRecorder) PostReminder(id interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostReminder", reflect.TypeOf((*MockLineService)(nil).PostReminder), id)
+}
