@@ -4,11 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
-	"net/http"
 	"os"
-
 	"encoding/json"
-	"strings"
 )
 
 func GetWebHook(c *gin.Context) {
@@ -21,7 +18,7 @@ func GetWebHook(c *gin.Context) {
 
 	for _, event := range received {
 		//log.Println("groupId: " + event.Source.GroupID)
-		log.Println("userId: " + event.Source.UserID)
+		//log.Println("userId: " + event.Source.UserID)
 		textMsg := new(linebot.TextMessage)
 		byteMsg, _ := event.Message.MarshalJSON()
 		if err := json.Unmarshal(byteMsg, textMsg); err != nil {

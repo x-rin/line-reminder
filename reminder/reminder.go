@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
-	"strings"
 )
 
 func PostReminder(c *gin.Context) {
