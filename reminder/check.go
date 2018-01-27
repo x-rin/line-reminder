@@ -8,7 +8,8 @@ import (
 
 func Check(c *gin.Context) {
 	id := c.PostForm("id")
-	target, pErr := GetProfile(id)
+	config := NewLineConfig()
+	target, pErr := config.GetProfile(id)
 	if pErr != nil {
 		log.Fatal(pErr.Error())
 	}
@@ -19,7 +20,7 @@ func Check(c *gin.Context) {
 	}
 
 	if !statusFlag {
-		mErr := PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
+		mErr := config.PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
 		if mErr != nil {
 			log.Println(mErr.Error())
 		}
