@@ -14,7 +14,7 @@ func SetupRouter() *gin.Engine {
 		v1.POST("reminder", PostReminder)
 		v1.POST("report", PostReport)
 		v1.POST("status", GetStatus)
-		v1.POST("check", Check)
+		v1.POST("check", GetWebHook)
 	}
 	return router
 }

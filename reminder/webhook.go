@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func Check(c *gin.Context) {
+func GetWebHook(c *gin.Context) {
 	config := NewLineConfig()
 	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
 	received, err := bot.ParseRequest(c.Request)
