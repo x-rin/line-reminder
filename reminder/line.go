@@ -17,11 +17,10 @@ type LineService interface {
 }
 
 type LineConfig struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	TokenType   string `json:"token_type"`
+	AccessToken   string `json:"access_token"`
+	ExpiresIn     int    `json:"expires_in"`
+	TokenType     string `json:"token_type"`
 	ChannelSecret string
-
 }
 
 func NewLineConfig() *LineConfig {
@@ -57,9 +56,9 @@ func NewLineConfig() *LineConfig {
 	}
 
 	config := &LineConfig{
-		AccessToken: authConfig.AccessToken,
-		ExpiresIn: authConfig.ExpiresIn,
-		TokenType: authConfig.TokenType,
+		AccessToken:   authConfig.AccessToken,
+		ExpiresIn:     authConfig.ExpiresIn,
+		TokenType:     authConfig.TokenType,
 		ChannelSecret: os.Getenv("CHANNEL_SECRET"),
 	}
 

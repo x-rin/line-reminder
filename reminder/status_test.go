@@ -61,7 +61,7 @@ var _ = Describe("Status", func() {
 			Context("set flase", func() {
 				testId := "5678Test"
 				It("status is \"false\", err is nil", func() {
-					acSt := SetStatus(testId,"false")
+					acSt := SetStatus(testId, "false")
 					Expect(acSt).To(Equal("false"))
 				})
 			})

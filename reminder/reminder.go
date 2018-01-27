@@ -1,25 +1,22 @@
 package reminder
 
 import (
-	"github.com/gin-gonic/gin"
-	"log"
 	"os"
 )
 
-func PostReminder(c *gin.Context) {
-	id := c.PostForm("id")
+func PostReminder(id string) (string, error) {
 	config := NewLineConfig()
 	target, err := config.GetProfile(id)
 	if err != nil {
-		log.Fatal(err.Error())
+		return "", err
 	}
 
 	rmdErr := config.PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
 	if rmdErr != nil {
-		log.Fatal(rmdErr.Error())
+		return "", rmdErr
 	}
 
 	status := SetStatus(id, "false")
 
-	Response(c, status)
+	return status, nil
 }
