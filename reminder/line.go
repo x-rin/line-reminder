@@ -1,4 +1,4 @@
-package api
+package reminder
 
 import (
 	"github.com/line/line-bot-sdk-go/linebot"
