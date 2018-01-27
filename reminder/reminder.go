@@ -1,15 +1,14 @@
-package api
+package reminder
 
 import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
-	"strings"
 )
 
 func PostReminder(c *gin.Context) {
-	envKey := c.PostForm("id")
-	target, err := GetProfile(envKey)
+	id := c.PostForm("id")
+	target, err := GetProfile(id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -19,7 +18,7 @@ func PostReminder(c *gin.Context) {
 		log.Fatal(rmdErr.Error())
 	}
 
-	statusKey := strings.ToUpper(envKey) + "_STATUS"
-	os.Setenv(statusKey, "false")
-	Response(c, os.Getenv(statusKey))
+	status := setStatus(id, "false")
+
+	Response(c, status)
 }

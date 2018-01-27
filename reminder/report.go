@@ -1,15 +1,14 @@
-package api
+package reminder
 
 import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
-	"strings"
 )
 
 func PostReport(c *gin.Context) {
-	envKey := c.PostForm("id")
-	source, err := GetProfile(envKey)
+	id := c.PostForm("id")
+	source, err := GetProfile(id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -18,12 +17,13 @@ func PostReport(c *gin.Context) {
 	if reportErr != nil {
 		log.Fatal(reportErr.Error())
 	}
-	statusKey := strings.ToUpper(envKey) + "_STATUS"
-	os.Setenv(statusKey, "true")
+
+	status := setStatus(id, "true")
 
 	replyErr := PostMessage(os.Getenv("REPLY_SUCCESS"))
 	if replyErr != nil {
 		log.Fatal(reportErr.Error())
 	}
-	Response(c, os.Getenv(statusKey))
+
+	Response(c, status)
 }
