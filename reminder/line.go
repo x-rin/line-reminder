@@ -1,22 +1,22 @@
 package reminder
 
 import (
+	"encoding/json"
 	"github.com/line/line-bot-sdk-go/linebot"
-	"os"
-	"net/url"
-	"strings"
 	"log"
 	"net/http"
-	"encoding/json"
+	"net/url"
+	"os"
+	"strings"
 )
 
 type LineConfig struct {
-	AccessToken	string 	`json:"access_token"`
-	ExpiresIn	int		`json:"expires_in"`
-	TokenType	string	`json:"token_type"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
 }
 
-func NewLineConfig() *LineConfig{
+func NewLineConfig() *LineConfig {
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
 	values.Set("client_id", os.Getenv("CHANNEL_ID"))
@@ -50,7 +50,6 @@ func NewLineConfig() *LineConfig{
 
 	return config
 }
-
 
 func PostMessage(message string) error {
 	config := NewLineConfig()
@@ -90,4 +89,14 @@ func GetProfile(id string) (string, error) {
 		return "", err
 	}
 	return res.DisplayName, nil
+}
+
+func ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
+	config := NewLineConfig()
+	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+	if err != nil {
+		return []linebot.Event{}, err
+	}
+	received, err := bot.ParseRequest(req)
+	return received, err
 }

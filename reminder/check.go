@@ -4,25 +4,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 )
 
-func GetStatus(c *gin.Context) {
-	envKey := c.PostForm("id")
-	target, err := GetProfile(envKey)
-	if err != nil {
-		log.Fatal(err.Error())
+func Check(c *gin.Context) {
+	id := c.PostForm("id")
+	target, pErr := GetProfile(id)
+	if pErr != nil {
+		log.Fatal(pErr.Error())
 	}
 
-	statusKey := strings.ToUpper(envKey) + "_STATUS"
-	status := os.Getenv(statusKey)
-	statusFlag, _ := strconv.ParseBool(status)
+	statusFlag, status, sErr := getStatus(id)
+	if sErr != nil {
+		log.Fatal(sErr.Error())
+	}
 
 	if !statusFlag {
-		err := PostMessage(target + ": " + os.Getenv("STATUS_MESSAGE"))
-		if err != nil {
-			log.Println(err.Error())
+		mErr := PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
+		if mErr != nil {
+			log.Println(mErr.Error())
 		}
 	}
 
