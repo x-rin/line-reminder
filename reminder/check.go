@@ -22,5 +22,6 @@ func (con *LineConfig) Check(id string) (string, error) {
 		}
 	}
 
-	return status, nil
+	reStatus := SetStatus(id, status)
+	return reStatus, nil
 }
