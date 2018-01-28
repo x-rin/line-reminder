@@ -10,7 +10,7 @@ func (con *LineConfig) PostReminder(id string) (string, error) {
 		return "", err
 	}
 
-	rmdErr := con.PostMessage(target + ": " + os.Getenv("REMINDER_MESSAGE"))
+	rmdErr := con.PostMessage("To " + target + "\n" + os.Getenv("REMINDER_MESSAGE"))
 	if rmdErr != nil {
 		return "", rmdErr
 	}
