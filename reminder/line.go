@@ -14,8 +14,6 @@ type LineService interface {
 	PostMessage(message string) error
 	ReplyMessage(token string, message string) error
 	GetProfile(id string) (string, error)
-	PostReport(id string) (string, error)
-	PostReminder(id string) (string, error)
 }
 
 type LineConfig struct {
@@ -68,8 +66,7 @@ func NewLineConfig() *LineConfig {
 }
 
 func (con *LineConfig) PostMessage(message string) error {
-	config := NewLineConfig()
-	bot, err := linebot.New(os.Getenv("CHANNEL_SECRET"), config.AccessToken)
+	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
 	if err != nil {
 		return err
 	}

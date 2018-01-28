@@ -16,7 +16,7 @@ func (con *LineConfig) Check(id string) (string, error) {
 	}
 
 	if !statusFlag {
-		mErr := con.PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
+		mErr := con.PostMessage("To " + target + "\n" + os.Getenv("CHECKED_MESSAGE"))
 		if mErr != nil {
 			return "", mErr
 		}

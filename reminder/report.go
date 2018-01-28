@@ -10,7 +10,7 @@ func (con *LineConfig) PostReport(id string) (string, error) {
 		return "", nil
 	}
 
-	rptErr := con.PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
+	rptErr := con.PostMessage(os.Getenv("REPORT_MESSAGE") + "\nby " + source)
 	if rptErr != nil {
 		return "", rptErr
 	}
