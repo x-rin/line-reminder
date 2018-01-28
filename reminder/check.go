@@ -1,29 +1,26 @@
 package reminder
 
 import (
-	"github.com/gin-gonic/gin"
-	"log"
 	"os"
 )
 
-func Check(c *gin.Context) {
-	id := c.PostForm("id")
-	target, pErr := GetProfile(id)
+func (con *LineConfig) Check(id string) (string, error) {
+	target, pErr := con.GetProfile(id)
 	if pErr != nil {
-		log.Fatal(pErr.Error())
+		return "", pErr
 	}
 
 	statusFlag, status, sErr := GetStatus(id)
 	if sErr != nil {
-		log.Fatal(sErr.Error())
+		return "", sErr
 	}
 
 	if !statusFlag {
-		mErr := PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
+		mErr := con.PostMessage(target + ": " + os.Getenv("CHECKED_MESSAGE"))
 		if mErr != nil {
-			log.Println(mErr.Error())
+			return "", mErr
 		}
 	}
 
-	Response(c, status)
+	return status, nil
 }

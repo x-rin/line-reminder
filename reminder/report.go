@@ -1,29 +1,26 @@
 package reminder
 
 import (
-	"github.com/gin-gonic/gin"
-	"log"
 	"os"
 )
 
-func PostReport(c *gin.Context) {
-	id := c.PostForm("id")
-	source, err := GetProfile(id)
+func (con *LineConfig) PostReport(id string) (string, error) {
+	source, err := con.GetProfile(id)
 	if err != nil {
-		log.Fatal(err.Error())
+		return "", nil
 	}
 
-	reportErr := PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
-	if reportErr != nil {
-		log.Fatal(reportErr.Error())
+	rptErr := con.PostMessage(source + ": " + os.Getenv("REPORT_MESSAGE"))
+	if rptErr != nil {
+		return "", rptErr
 	}
 
 	status := SetStatus(id, "true")
 
-	replyErr := PostMessage(os.Getenv("REPLY_SUCCESS"))
-	if replyErr != nil {
-		log.Fatal(reportErr.Error())
+	rpyErr := con.PostMessage(os.Getenv("REPLY_SUCCESS"))
+	if rpyErr != nil {
+		return "", rpyErr
 	}
 
-	Response(c, status)
+	return status, nil
 }

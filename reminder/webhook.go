@@ -2,16 +2,16 @@ package reminder
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
+	"net/http"
 	"os"
 )
 
-func GetWebHook(c *gin.Context) {
-	received, err := ReceiveEvent(c.Request)
+func (con *LineConfig) GetWebHook(req *http.Request) (string, error) {
+	received, err := con.ReceiveEvent(req)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 
 	var status = "false"
@@ -28,12 +28,12 @@ func GetWebHook(c *gin.Context) {
 
 		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
 			status = SetStatus(event.Source.UserID, "true")
-			err := ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
+			err := con.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
-				log.Fatal(err.Error())
+				return "", err
 			}
 		}
 	}
 
-	Response(c, status)
+	return status, nil
 }
