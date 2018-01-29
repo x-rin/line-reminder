@@ -1,4 +1,4 @@
-package reminder
+package line_reminder
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func (con *LineConfig) GetWebHook(req *http.Request) (string, error) {
-	received, err := con.ReceiveEvent(req)
+func (l *lineReminder) GetWebHook(req *http.Request) (string, error) {
+	received, err := l.client.ReceiveEvent(req)
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +28,7 @@ func (con *LineConfig) GetWebHook(req *http.Request) (string, error) {
 
 		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
 			status = SetStatus(event.Source.UserID, "true")
-			err := con.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
+			err := l.client.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
 				return "", err
 			}

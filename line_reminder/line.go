@@ -1,4 +1,4 @@
-package reminder
+package line_reminder
 
 import (
 	"encoding/json"
@@ -10,20 +10,21 @@ import (
 	"strings"
 )
 
-type LineService interface {
+type LineClient interface {
 	PostMessage(message string) error
 	ReplyMessage(token string, message string) error
 	GetProfile(id string) (string, error)
+	ReceiveEvent(req *http.Request) ([]linebot.Event, error)
 }
 
-type LineConfig struct {
+type lineClient struct {
 	AccessToken   string `json:"access_token"`
 	ExpiresIn     int    `json:"expires_in"`
 	TokenType     string `json:"token_type"`
 	ChannelSecret string
 }
 
-func NewLineConfig() *LineConfig {
+func NewLineClient() LineClient {
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
 	values.Set("client_id", os.Getenv("CHANNEL_ID"))
@@ -49,13 +50,13 @@ func NewLineConfig() *LineConfig {
 	}
 	defer res.Body.Close()
 
-	authConfig := new(LineConfig)
+	authConfig := new(lineClient)
 
 	if err := json.NewDecoder(res.Body).Decode(authConfig); err != nil {
 		log.Fatal(err)
 	}
 
-	config := &LineConfig{
+	config := &lineClient{
 		AccessToken:   authConfig.AccessToken,
 		ExpiresIn:     authConfig.ExpiresIn,
 		TokenType:     authConfig.TokenType,
@@ -65,8 +66,8 @@ func NewLineConfig() *LineConfig {
 	return config
 }
 
-func (con *LineConfig) PostMessage(message string) error {
-	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
+func (cli *lineClient) PostMessage(message string) error {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -77,8 +78,8 @@ func (con *LineConfig) PostMessage(message string) error {
 	return nil
 }
 
-func (con *LineConfig) ReplyMessage(token string, message string) error {
-	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
+func (cli *lineClient) ReplyMessage(token string, message string) error {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -89,8 +90,8 @@ func (con *LineConfig) ReplyMessage(token string, message string) error {
 	return nil
 }
 
-func (con *LineConfig) GetProfile(id string) (string, error) {
-	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
+func (cli *lineClient) GetProfile(id string) (string, error) {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return "", err
 	}
@@ -102,8 +103,8 @@ func (con *LineConfig) GetProfile(id string) (string, error) {
 	return res.DisplayName, nil
 }
 
-func (con *LineConfig) ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
-	bot, err := linebot.New(con.ChannelSecret, con.AccessToken)
+func (cli *lineClient) ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return []linebot.Event{}, err
 	}

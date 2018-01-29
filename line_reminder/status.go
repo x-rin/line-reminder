@@ -1,4 +1,4 @@
-package reminder
+package line_reminder
 
 import (
 	"os"
