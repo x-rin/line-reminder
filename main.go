@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	. "github.com/kutsuzawa/line-reminder/reminder"
+	. "github.com/kutsuzawa/line-reminder/line_reminder"
 	"log"
 	"net/http"
 	"os"
@@ -22,8 +22,8 @@ func SetupRouter() *gin.Engine {
 
 func CheckCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	con := NewLineConfig()
-	status, err := con.Check(id)
+	reminder := NewLineReminder()
+	status, err := reminder.Check(id)
 	if err != nil {
 		Response(c, "", err)
 	} else {
@@ -33,8 +33,8 @@ func CheckCtr(c *gin.Context) {
 
 func PostReminderCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	con := NewLineConfig()
-	status, err := con.PostReminder(id)
+	reminder := NewLineReminder()
+	status, err := reminder.PostReminder(id)
 	if err != nil {
 		Response(c, "", err)
 	} else {
@@ -44,8 +44,8 @@ func PostReminderCtr(c *gin.Context) {
 
 func PostReportCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	con := NewLineConfig()
-	status, err := con.PostReport(id)
+	reminder := NewLineReminder()
+	status, err := reminder.PostReport(id)
 	if err != nil {
 		Response(c, "", err)
 	} else {
@@ -54,8 +54,8 @@ func PostReportCtr(c *gin.Context) {
 }
 
 func GetWebHookCtr(c *gin.Context) {
-	con := NewLineConfig()
-	status, err := con.GetWebHook(c.Request)
+	reminder := NewLineReminder()
+	status, err := reminder.GetWebHook(c.Request)
 	if err != nil {
 		Response(c, "", nil)
 	} else {

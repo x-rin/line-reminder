@@ -1,4 +1,4 @@
-package reminder_test
+package line_reminder_test
 
 import (
 	. "github.com/onsi/ginkgo"

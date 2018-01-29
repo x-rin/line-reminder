@@ -1,11 +1,11 @@
-package reminder
+package line_reminder
 
 import (
 	"os"
 )
 
-func (con *LineConfig) Check(id string) (string, error) {
-	target, pErr := con.GetProfile(id)
+func (l *lineReminder) Check(id string) (string, error) {
+	target, pErr := l.client.GetProfile(id)
 	if pErr != nil {
 		return "", pErr
 	}
@@ -16,7 +16,7 @@ func (con *LineConfig) Check(id string) (string, error) {
 	}
 
 	if !statusFlag {
-		mErr := con.PostMessage("To " + target + "\n" + os.Getenv("CHECKED_MESSAGE"))
+		mErr := l.client.PostMessage("To " + target + "\n" + os.Getenv("CHECKED_MESSAGE"))
 		if mErr != nil {
 			return "", mErr
 		}
