@@ -3,7 +3,6 @@ package line_reminder
 import (
 	"encoding/json"
 	"github.com/line/line-bot-sdk-go/linebot"
-	"log"
 	"net/http"
 	"os"
 )
@@ -19,14 +18,8 @@ func (l *lineReminder) GetWebHook(req *http.Request) (string, error) {
 	for _, event := range received {
 		//log.Println("groupId: " + event.Source.GroupID)
 		//log.Println("userId: " + event.Source.UserID)
-		textMsg := new(linebot.TextMessage)
-		byteMsg, _ := event.Message.MarshalJSON()
-		if err := json.Unmarshal(byteMsg, textMsg); err != nil {
-			//画像メッセージの場合もあるからただエラーを出力するだけにする
-			log.Println(err.Error())
-		}
-
-		if textMsg.Text == os.Getenv("REPORT_MESSAGE") {
+		msg, _ := ExtractMessage(event)
+		if msg == os.Getenv("REPORT_MESSAGE") {
 			status = SetStatus(event.Source.UserID, "true")
 			err := l.client.ReplyMessage(event.ReplyToken, os.Getenv("REPLY_SUCCESS"))
 			if err != nil {
@@ -36,4 +29,13 @@ func (l *lineReminder) GetWebHook(req *http.Request) (string, error) {
 	}
 
 	return status, nil
+}
+
+func ExtractMessage(event linebot.Event) (string, error) {
+	textMsg := new(linebot.TextMessage)
+	byteMsg, _ := event.Message.MarshalJSON()
+	if err := json.Unmarshal(byteMsg, textMsg); err != nil {
+		return "", err
+	}
+	return textMsg.Text, nil
 }
