@@ -1,11 +1,11 @@
 package line_reminder
 
-type lineReminder struct {
+type LineReminder struct {
 	client *lineClient
 }
 
-func NewLineReminder() *lineReminder{
-	return &lineReminder{
+func NewLineReminder() *LineReminder{
+	return &LineReminder{
 		client: NewLineClient(),
 	}
 }

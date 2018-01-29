@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func (l *lineReminder) Check(id string) (string, error) {
+func (l *LineReminder) Check(id string) (string, error) {
 	target, pErr := l.client.GetProfile(id)
 	if pErr != nil {
 		return "", pErr

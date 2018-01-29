@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func (l *lineReminder) GetWebHook(req *http.Request) (string, error) {
+func (l *LineReminder) GetWebHook(req *http.Request) (string, error) {
 	received, err := l.client.ReceiveEvent(req)
 	if err != nil {
 		return "", err

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestReminder(t *testing.T) {
+func TestLineReminder(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Reminder Suite")
+	RunSpecs(t, "LineReminder Suite")
 }
