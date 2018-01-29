@@ -1,11 +1,20 @@
 package line_reminder
 
-type LineReminder struct {
-	client *lineClient
+import "net/http"
+
+type LineReminder interface {
+	PostReport(id string) (string, error)
+	Check(id string) (string, error)
+	PostReminder(id string) (string, error)
+	GetWebHook(req *http.Request) (string, error)
 }
 
-func NewLineReminder() *LineReminder{
-	return &LineReminder{
-		client: NewLineClient(),
+type lineReminder struct {
+	client LineClient
+}
+
+func NewLineReminder(client LineClient) LineReminder {
+	return &lineReminder{
+		client: client,
 	}
 }

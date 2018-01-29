@@ -14,6 +14,7 @@ type LineClient interface {
 	PostMessage(message string) error
 	ReplyMessage(token string, message string) error
 	GetProfile(id string) (string, error)
+	ReceiveEvent(req *http.Request) ([]linebot.Event, error)
 }
 
 type lineClient struct {
@@ -23,7 +24,7 @@ type lineClient struct {
 	ChannelSecret string
 }
 
-func NewLineClient() *lineClient {
+func NewLineClient() LineClient {
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
 	values.Set("client_id", os.Getenv("CHANNEL_ID"))

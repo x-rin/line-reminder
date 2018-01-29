@@ -4,13 +4,14 @@ import (
 	"os"
 )
 
-func (l *LineReminder) PostReport(id string) (string, error) {
+func (l *lineReminder) PostReport(id string) (string, error) {
 	source, err := l.client.GetProfile(id)
 	if err != nil {
 		return "", nil
 	}
 
-	rptErr := l.client.PostMessage(os.Getenv("REPORT_MESSAGE") + "\nby " + source)
+	message := os.Getenv("REPORT_MESSAGE") + "\nby " + source
+	rptErr := l.client.PostMessage(message)
 	if rptErr != nil {
 		return "", rptErr
 	}

@@ -22,7 +22,8 @@ func SetupRouter() *gin.Engine {
 
 func CheckCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	reminder := NewLineReminder()
+	client := NewLineClient()
+	reminder := NewLineReminder(client)
 	status, err := reminder.Check(id)
 	if err != nil {
 		Response(c, "", err)
@@ -33,7 +34,8 @@ func CheckCtr(c *gin.Context) {
 
 func PostReminderCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	reminder := NewLineReminder()
+	client := NewLineClient()
+	reminder := NewLineReminder(client)
 	status, err := reminder.PostReminder(id)
 	if err != nil {
 		Response(c, "", err)
@@ -44,7 +46,8 @@ func PostReminderCtr(c *gin.Context) {
 
 func PostReportCtr(c *gin.Context) {
 	id := c.PostForm("id")
-	reminder := NewLineReminder()
+	client := NewLineClient()
+	reminder := NewLineReminder(client)
 	status, err := reminder.PostReport(id)
 	if err != nil {
 		Response(c, "", err)
@@ -54,7 +57,8 @@ func PostReportCtr(c *gin.Context) {
 }
 
 func GetWebHookCtr(c *gin.Context) {
-	reminder := NewLineReminder()
+	client := NewLineClient()
+	reminder := NewLineReminder(client)
 	status, err := reminder.GetWebHook(c.Request)
 	if err != nil {
 		Response(c, "", nil)
