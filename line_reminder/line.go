@@ -66,8 +66,8 @@ func NewLineClient() LineClient {
 	return config
 }
 
-func (c *lineClient) PostMessage(message string) error {
-	bot, err := linebot.New(c.ChannelSecret, c.AccessToken)
+func (cli *lineClient) PostMessage(message string) error {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -78,8 +78,8 @@ func (c *lineClient) PostMessage(message string) error {
 	return nil
 }
 
-func (c *lineClient) ReplyMessage(token string, message string) error {
-	bot, err := linebot.New(c.ChannelSecret, c.AccessToken)
+func (cli *lineClient) ReplyMessage(token string, message string) error {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -90,8 +90,8 @@ func (c *lineClient) ReplyMessage(token string, message string) error {
 	return nil
 }
 
-func (c *lineClient) GetProfile(id string) (string, error) {
-	bot, err := linebot.New(c.ChannelSecret, c.AccessToken)
+func (cli *lineClient) GetProfile(id string) (string, error) {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return "", err
 	}
@@ -103,8 +103,8 @@ func (c *lineClient) GetProfile(id string) (string, error) {
 	return res.DisplayName, nil
 }
 
-func (c *lineClient) ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
-	bot, err := linebot.New(c.ChannelSecret, c.AccessToken)
+func (cli *lineClient) ReceiveEvent(req *http.Request) ([]linebot.Event, error) {
+	bot, err := linebot.New(cli.ChannelSecret, cli.AccessToken)
 	if err != nil {
 		return []linebot.Event{}, err
 	}

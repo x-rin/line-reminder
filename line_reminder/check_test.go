@@ -3,12 +3,12 @@ package line_reminder_test
 import (
 	. "github.com/kutsuzawa/line-reminder/line_reminder"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/golang/mock/gomock"
 	"github.com/kutsuzawa/line-reminder/line_reminder/mock_line_reminder"
-	"os"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	"os"
 )
 
 var _ = Describe("Check", func() {
@@ -28,8 +28,8 @@ var _ = Describe("Check", func() {
 		c.Finish()
 	})
 
-	Describe("Check", func(){
-		Describe("normal pattern", func(){
+	Describe("Check", func() {
+		Describe("normal pattern", func() {
 			Context("done report", func() {
 				os.Setenv("CHECKUSER12_STATUS", "true")
 				It("status is \"true\", err is nil", func() {
