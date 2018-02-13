@@ -2,29 +2,47 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	. "github.com/kutsuzawa/line-reminder/line_reminder"
+	"github.com/kutsuzawa/line-reminder/reminder"
 	"log"
 	"net/http"
 	"os"
 )
 
+// SetupRouter - ルーターの初期化を行う
 func SetupRouter() *gin.Engine {
 	router := gin.New()
 	v1 := router.Group("/api/v1/")
 	{
-		v1.POST("reminder", PostReminderCtr)
-		v1.POST("report", PostReportCtr)
+		v1.POST("reminder", RemindCtr)
+		v1.POST("report", ReportCtr)
 		v1.POST("check", CheckCtr)
-		v1.POST("webhook", GetWebHookCtr)
+		v1.POST("webhook", ReplyCtr)
 	}
 	return router
 }
 
+// CheckCtr - ステータスチェックのリクエストを受け取った際のハンドラ
 func CheckCtr(c *gin.Context) {
+	controller, err := New()
+	if err != nil {
+		Response(c, "", err)
+	}
 	id := c.PostForm("id")
-	client := NewLineClient()
-	reminder := NewLineReminder(client)
-	status, err := reminder.Check(id)
+	status, err := controller.Check(id)
+	if err != nil {
+		Response(c, "", err)
+	}
+	Response(c, status, nil)
+}
+
+// RemindCtr - リマインダーのリクエストを受け取った際のハンドラ
+func RemindCtr(c *gin.Context) {
+	controller, err := New()
+	if err != nil {
+		Response(c, "", err)
+	}
+	id := c.PostForm("id")
+	status, err := controller.Remind(id)
 	if err != nil {
 		Response(c, "", err)
 	} else {
@@ -32,11 +50,14 @@ func CheckCtr(c *gin.Context) {
 	}
 }
 
-func PostReminderCtr(c *gin.Context) {
+// ReportCtr - レポートのリクエストを受け取った際のハンドラ
+func ReportCtr(c *gin.Context) {
+	controller, err := New()
+	if err != nil {
+		Response(c, "", err)
+	}
 	id := c.PostForm("id")
-	client := NewLineClient()
-	reminder := NewLineReminder(client)
-	status, err := reminder.PostReminder(id)
+	status, err := controller.Report(id)
 	if err != nil {
 		Response(c, "", err)
 	} else {
@@ -44,22 +65,13 @@ func PostReminderCtr(c *gin.Context) {
 	}
 }
 
-func PostReportCtr(c *gin.Context) {
-	id := c.PostForm("id")
-	client := NewLineClient()
-	reminder := NewLineReminder(client)
-	status, err := reminder.PostReport(id)
+// ReplyCtr - Webhookを受け取った際のハンドラ
+func ReplyCtr(c *gin.Context) {
+	controller, err := New()
 	if err != nil {
 		Response(c, "", err)
-	} else {
-		Response(c, status, nil)
 	}
-}
-
-func GetWebHookCtr(c *gin.Context) {
-	client := NewLineClient()
-	reminder := NewLineReminder(client)
-	status, err := reminder.GetWebHook(c.Request)
+	status, err := controller.Reply(c.Request)
 	if err != nil {
 		Response(c, "", nil)
 	} else {
@@ -67,6 +79,7 @@ func GetWebHookCtr(c *gin.Context) {
 	}
 }
 
+// Response - Responseを返す
 func Response(c *gin.Context, status string, err error) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -76,6 +89,21 @@ func Response(c *gin.Context, status string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": status,
 	})
+}
+
+// New - Controllerを生成
+func New() (reminder.LineController, error) {
+	config, err := reminder.NewConfig()
+	if err != nil {
+		return nil, err
+	}
+	api, err := reminder.NewLineAPI(config)
+	if err != nil {
+		return nil, err
+	}
+	service := reminder.NewLineService(api)
+	controller := reminder.NewLineController(service)
+	return controller, nil
 }
 
 func main() {

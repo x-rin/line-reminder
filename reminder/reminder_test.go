@@ -1,11 +1,11 @@
-package line_reminder_test
+package reminder_test
 
 import (
-	. "github.com/kutsuzawa/line-reminder/line_reminder"
+	. "github.com/kutsuzawa/line-reminder/reminder"
 
 	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/kutsuzawa/line-reminder/line_reminder/mock_line_reminder"
+	"github.com/kutsuzawa/line-reminder/reminder/mock_line_reminder"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"os"
