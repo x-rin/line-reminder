@@ -1,10 +1,10 @@
 package reminder
 
 import (
-	"os"
-	"net/http"
-	"github.com/line/line-bot-sdk-go/linebot"
 	"encoding/json"
+	"github.com/line/line-bot-sdk-go/linebot"
+	"net/http"
+	"os"
 )
 
 // LineController - コントローラーができることの定義
@@ -91,7 +91,7 @@ func (lc *lineController) Reply(req *http.Request) (string, error) {
 	var status = "false"
 	if msg == os.Getenv("REPORT_MESSAGE") {
 		status = SetStatus(event.Source.UserID, "true")
-		if err := lc.service.Reply(event.ReplyToken, os.Getenv("REPLY_SUCCESS")); err != nil{
+		if err := lc.service.Reply(event.ReplyToken, os.Getenv("REPLY_SUCCESS")); err != nil {
 			return "", err
 		}
 	}

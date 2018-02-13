@@ -7,9 +7,9 @@ import (
 
 // LineAPI - linebotの使用するメソッドを定義
 type LineAPI interface {
-	PushMessage(to string, message linebot.Message) *linebot.PushMessageCall
-	ReplyMessage(replyToken string, message linebot.Message) *linebot.ReplyMessageCall
-	GetProfile(userID string) *linebot.GetProfileCall
+	PushMessage(to string, message linebot.Message) (*linebot.BasicResponse, error)
+	ReplyMessage(replyToken string, message linebot.Message) (*linebot.BasicResponse, error)
+	GetProfile(userID string) (*linebot.UserProfileResponse, error)
 	ParseRequest(r *http.Request) ([]linebot.Event, error)
 }
 
@@ -28,16 +28,16 @@ func NewLineAPI(config *Config) (LineAPI, error) {
 	}, nil
 }
 
-func (la *lineAPI) PushMessage(to string, message linebot.Message) *linebot.PushMessageCall {
-	return la.client.PushMessage(to, message)
+func (la *lineAPI) PushMessage(to string, message linebot.Message) (*linebot.BasicResponse, error) {
+	return la.client.PushMessage(to, message).Do()
 }
 
-func (la *lineAPI) ReplyMessage(replyToken string, message linebot.Message) *linebot.ReplyMessageCall {
-	return la.client.ReplyMessage(replyToken, message)
+func (la *lineAPI) ReplyMessage(replyToken string, message linebot.Message) (*linebot.BasicResponse, error) {
+	return la.client.ReplyMessage(replyToken, message).Do()
 }
 
-func (la *lineAPI) GetProfile(userID string) *linebot.GetProfileCall {
-	return la.client.GetProfile(userID)
+func (la *lineAPI) GetProfile(userID string) (*linebot.UserProfileResponse, error) {
+	return la.client.GetProfile(userID).Do()
 }
 
 func (la *lineAPI) ParseRequest(r *http.Request) ([]linebot.Event, error) {
