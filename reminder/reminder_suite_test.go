@@ -1,4 +1,4 @@
-package line_reminder_test
+package reminder_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestLineReminder(t *testing.T) {
+func TestReminder(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "LineReminder Suite")
+	RunSpecs(t, "Reminder Suite")
 }

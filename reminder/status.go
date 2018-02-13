@@ -1,4 +1,4 @@
-package line_reminder
+package reminder
 
 import (
 	"os"
@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// GetStatus - 対象のStatusを取得する
 func GetStatus(id string) (bool, string, error) {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	status := os.Getenv(statusKey)
@@ -16,6 +17,7 @@ func GetStatus(id string) (bool, string, error) {
 	return statusFlag, status, nil
 }
 
+// SetStatus - 対象のStatusをセットする
 func SetStatus(id string, status string) string {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	os.Setenv(statusKey, status)
