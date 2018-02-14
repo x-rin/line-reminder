@@ -51,7 +51,7 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	var accessConfig *AccessConfig
+	accessConfig := new(AccessConfig)
 	if err := json.NewDecoder(res.Body).Decode(accessConfig); err != nil {
 		return nil, err
 	}
