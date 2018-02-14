@@ -23,24 +23,19 @@ func SetupRouter() *gin.Engine {
 
 // CheckCtr - ステータスチェックのリクエストを受け取った際のハンドラ
 func CheckCtr(c *gin.Context) {
-	controller, err := New()
-	if err != nil {
-		Response(c, "", err)
-	}
+	controller := New()
 	id := c.PostForm("id")
 	status, err := controller.Check(id)
 	if err != nil {
 		Response(c, "", err)
+	} else {
+		Response(c, status, nil)
 	}
-	Response(c, status, nil)
 }
 
 // RemindCtr - リマインダーのリクエストを受け取った際のハンドラ
 func RemindCtr(c *gin.Context) {
-	controller, err := New()
-	if err != nil {
-		Response(c, "", err)
-	}
+	controller := New()
 	id := c.PostForm("id")
 	status, err := controller.Remind(id)
 	if err != nil {
@@ -52,10 +47,7 @@ func RemindCtr(c *gin.Context) {
 
 // ReportCtr - レポートのリクエストを受け取った際のハンドラ
 func ReportCtr(c *gin.Context) {
-	controller, err := New()
-	if err != nil {
-		Response(c, "", err)
-	}
+	controller := New()
 	id := c.PostForm("id")
 	status, err := controller.Report(id)
 	if err != nil {
@@ -67,10 +59,7 @@ func ReportCtr(c *gin.Context) {
 
 // ReplyCtr - Webhookを受け取った際のハンドラ
 func ReplyCtr(c *gin.Context) {
-	controller, err := New()
-	if err != nil {
-		Response(c, "", err)
-	}
+	controller := New()
 	status, err := controller.Reply(c.Request)
 	if err != nil {
 		Response(c, "", nil)
@@ -92,22 +81,21 @@ func Response(c *gin.Context, status string, err error) {
 }
 
 // New - Controllerを生成
-func New() (reminder.LineController, error) {
+func New() reminder.LineController {
 	config, err := reminder.NewConfig()
 	if err != nil {
-		return nil, err
+		log.Fatalln("failing to create config: " + err.Error())
 	}
 	api, err := reminder.NewLineAPI(config)
 	if err != nil {
-		return nil, err
+		log.Fatalln("failing to create api: " + err.Error())
 	}
 	service := reminder.NewLineService(api)
 	controller := reminder.NewLineController(service)
-	return controller, nil
+	return controller
 }
 
 func main() {
-
 	router := SetupRouter()
 	log.Printf("Start Go HTTP Server")
 
