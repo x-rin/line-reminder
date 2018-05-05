@@ -53,11 +53,11 @@ func (lc *lineController) Remind(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	status := SetStatus(id, "false")
 	message := "To " + target + "\n" + os.Getenv("REMINDER_MESSAGE")
 	if err := lc.service.Send(message); err != nil {
 		return "", err
 	}
-	status := SetStatus(id, "false")
 	return status, nil
 }
 
