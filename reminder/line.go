@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/line/line-bot-sdk-go/linebot"
+	"log"
 )
 
 // LineService - LineAPIを使用するメソッドを定義
@@ -49,8 +50,8 @@ func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
 	}
 	var retEvent linebot.Event
 	for _, event := range received {
-		//log.Println("groupId: " + event.Source.GroupID)
-		//log.Println("userId: " + event.Source.UserID)
+		log.Println("groupId: " + event.Source.GroupID)
+		log.Println("userId: " + event.Source.UserID)
 		retEvent = event
 	}
 	return retEvent, nil

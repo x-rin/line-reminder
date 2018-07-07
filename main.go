@@ -79,8 +79,6 @@ func (h *handler) Report(c *gin.Context) {
 		return
 	}
 	client, err := linebot.New(h.channelSecret, *channelToken)
-	h.logger.Info("get token",
-		zap.String("token", *channelToken))
 	if err != nil {
 		h.logger.Error("failed to create line client")
 		return

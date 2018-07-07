@@ -64,7 +64,7 @@ func (lc *LineController) Remind(id, message string) (string, error) {
 func (lc *LineController) Report(id, message string) (string, error) {
 	source, err := lc.service.GetNameByID(id)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	msg := fmt.Sprintf("%s\nby %s", message, source)
 	if err := lc.service.Send(lc.groupID, msg); err != nil {
