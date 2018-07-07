@@ -1,45 +1,67 @@
 package reminder
 
 import (
-	"github.com/line/line-bot-sdk-go/linebot"
 	"net/http"
+
+	"github.com/line/line-bot-sdk-go/linebot"
+	"log"
 )
 
-// LineAPI - linebotの使用するメソッドを定義
-type LineAPI interface {
-	PushMessage(to string, message linebot.Message) (*linebot.BasicResponse, error)
-	ReplyMessage(replyToken string, message linebot.Message) (*linebot.BasicResponse, error)
-	GetProfile(userID string) (*linebot.UserProfileResponse, error)
-	ParseRequest(r *http.Request) ([]linebot.Event, error)
+// LineService - LineAPIを使用するメソッドを定義
+type LineService interface {
+	GetNameByID(id string) (string, error)
+	Send(groupID, message string) error
+	Hear(request *http.Request) (linebot.Event, error)
+	Reply(replyToken string, message string) error
 }
 
-type lineAPI struct {
+type lineService struct {
 	client *linebot.Client
 }
 
-// NewLineAPI - LineAPIを生成
-func NewLineAPI(config *Config) (LineAPI, error) {
-	client, err := linebot.New(config.Channel.Secret, config.Access.Token)
-	if err != nil {
-		return nil, err
-	}
-	return &lineAPI{
+// NewLineService - LineServiceを生成
+func NewLineService(client *linebot.Client) LineService {
+	return &lineService{
 		client: client,
-	}, nil
+	}
 }
 
-func (la *lineAPI) PushMessage(to string, message linebot.Message) (*linebot.BasicResponse, error) {
-	return la.client.PushMessage(to, message).Do()
+func (ls *lineService) GetNameByID(id string) (string, error) {
+	profile := ls.client.GetProfile(id)
+	target, err := profile.Do()
+	if err != nil {
+		return "", err
+	}
+	return target.DisplayName, nil
 }
 
-func (la *lineAPI) ReplyMessage(replyToken string, message linebot.Message) (*linebot.BasicResponse, error) {
-	return la.client.ReplyMessage(replyToken, message).Do()
+func (ls *lineService) Send(groupID, message string) error {
+	msgRequest := ls.client.PushMessage(groupID, linebot.NewTextMessage(message))
+	if _, err := msgRequest.Do(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (la *lineAPI) GetProfile(userID string) (*linebot.UserProfileResponse, error) {
-	return la.client.GetProfile(userID).Do()
+func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
+	received, err := ls.client.ParseRequest(request)
+	if err != nil {
+		return linebot.Event{}, err
+	}
+	var retEvent linebot.Event
+	for _, event := range received {
+		log.Println("groupId: " + event.Source.GroupID)
+		//log.Println("userId: " + event.Source.UserID)
+		retEvent = event
+	}
+	return retEvent, nil
 }
 
-func (la *lineAPI) ParseRequest(r *http.Request) ([]linebot.Event, error) {
-	return la.client.ParseRequest(r)
+func (ls *lineService) Reply(replyToken string, message string) error {
+	msgRequest := ls.client.ReplyMessage(replyToken, linebot.NewTextMessage(message))
+	if _, err := msgRequest.Do(); err != nil {
+		return err
+	}
+	return nil
 }
+

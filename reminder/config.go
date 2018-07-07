@@ -1,65 +1,42 @@
 package reminder
 
 import (
-	"github.com/gin-gonic/gin/json"
+	"encoding/json"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
-// AccessConfig - Line APIにアクセスするためのConfig
-type AccessConfig struct {
+type authResponse struct {
 	Token     string `json:"access_token"`
 	ExpiresIn int    `json:"expires_in"`
 	TokenType string `json:"token_type"`
 }
 
-// ChannelConfig - Line Channelに関するConfig
-type ChannelConfig struct {
-	ID     string
-	Secret string
-}
-
-// Config - AccessConfig, ChannelConfigを統合したもの
-type Config struct {
-	Access  *AccessConfig
-	Channel *ChannelConfig
-}
-
-// NewConfig - Configを生成
-func NewConfig() (*Config, error) {
+// GetToken - ChannelTokenを取得する
+func GetChannelToken(clientID, clientSecret string) (*string, error) {
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
-	values.Set("client_id", os.Getenv("CHANNEL_ID"))
-	values.Set("client_secret", os.Getenv("CHANNEL_SECRET"))
-
+	values.Set("client_id", clientID)
+	values.Set("client_secret", clientSecret)
 	requestURL := "https://api.line.me/v2/oauth/accessToken"
-	req, err := http.NewRequest(
-		"POST",
-		requestURL,
-		strings.NewReader(values.Encode()),
-	)
+	req, err := http.NewRequest("POST", requestURL, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{}
-	res, err := client.Do(req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-	accessConfig := new(AccessConfig)
-	if err := json.NewDecoder(res.Body).Decode(accessConfig); err != nil {
+
+	var authResponse authResponse
+	decoder := json.NewDecoder(res.Body)
+	if err := decoder.Decode(&authResponse); err != nil {
 		return nil, err
 	}
-	return &Config{
-		Access: accessConfig,
-		Channel: &ChannelConfig{
-			ID:     os.Getenv("CHANNEL_ID"),
-			Secret: os.Getenv("CHANNEL_SECRET"),
-		},
-	}, nil
+
+	return &authResponse.Token, nil
 }
