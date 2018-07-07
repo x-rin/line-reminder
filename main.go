@@ -31,33 +31,38 @@ func SetupRouter(h *handler) *gin.Engine {
 	{
 		//v1.POST("reminder", h.Remind)
 		v1.POST("report", h.Report)
-		//v1.POST("check", h.Check)
+		v1.POST("check", h.Check)
 		v1.POST("webhook", h.Reply)
 	}
 	return router
 }
 
 // Check - ステータスチェックのリクエストを受け取った際のハンドラ
-//func (h *handler) Check(c *gin.Context) {
-//	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
-//	if err != nil{
-//		h.logger.Error("failed to get channel token")
-//		return
-//	}
-//	client, err := linebot.New(h.channelSecret, *channelToken)
-//	if err != nil {
-//		h.logger.Error("failed to create line client")
-//	}
-//	service := reminder.NewLineService(client)
-//	controller := reminder.NewLineController(h.groupID, service)
-//	id := c.PostForm("id")
-//	status, err := controller.Check(id, CheckedMessage)
-//	if err != nil {
-//		h.Response(c, "", err)
-//	} else {
-//		h.Response(c, status, nil)
-//	}
-//}
+func (h *handler) Check(c *gin.Context) {
+	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
+	if err != nil {
+		h.logger.Error("failed to get channel token")
+		return
+	}
+	client, err := linebot.New(h.channelSecret, *channelToken)
+	if err != nil {
+		h.logger.Error("failed to create line client")
+	}
+	service := reminder.NewLineService(client)
+	controller := reminder.NewLineController(h.groupID, service)
+	id := c.PostForm("id")
+	status, err := controller.Check(id, CheckedMessage)
+	if err != nil {
+		h.logger.Error("failed to check",
+			zap.String("message", err.Error()))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	h.logger.Info("response returned",
+		zap.String("status", status))
+	c.JSON(http.StatusOK, nil)
+	return
+}
 
 // Remind - リマインダーのリクエストを受け取った際のハンドラ
 //func (h *handler) Remind(c *gin.Context) {

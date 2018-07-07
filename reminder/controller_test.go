@@ -6,7 +6,8 @@ import (
 
 	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/line/line-bot-sdk-go/linebot"
-	"github.com/pkg/errors"
+	"os"
+	"strings"
 )
 
 var (
@@ -19,6 +20,8 @@ func TestMain(m *testing.M) {
 	mockService = &MockService{}
 	groupID = "groupID"
 	controller = reminder.NewLineController(groupID, mockService)
+	run := m.Run()
+	os.Exit(run)
 }
 
 func TestLineController_ReplyByWord(t *testing.T) {
@@ -62,23 +65,52 @@ func TestLineController_Report(t *testing.T) {
 			t.Errorf("status should be %s, actual is %s", c.expect, actual)
 		}
 	}
-
 }
 
-type MockService struct {
-}
+func TestLineController_Check(t *testing.T) {
+	t.Helper()
+	cases := []struct {
+		name    string
+		inputID string
+		expect  string
+	}{
+		{name: "checkForExistTrueUser", inputID: "existTrueUserID", expect: "true"},
+		{name: "checkForExistFalseUser", inputID: "existFalseUserID", expect: "false"},
+		{name: "checkForDoesNotExistUser", inputID: "doesNotExistUserID", expect: ""},
+	}
 
-func (ms *MockService) GetNameByID(id string) (string, error) {
-	if id == "existUserID" {
-		return "existUserName", nil
-	} else if id == "newUserID" {
-		return "newUserName", nil
-	} else {
-		return "", errors.New("error!")
+	reminder.SetStatus("existTrueUserID", "true")
+	reminder.SetStatus("existFalseUserID", "false")
+	os.Setenv("EXISTFALSEUSERID_STATUS", "false")
+	for _, c := range cases {
+		mockService.SendCount = 0
+		actual, _ := controller.Check(c.inputID, "testMsg")
+		if actual != c.expect {
+			t.Errorf("status should be %s, actual is %s", c.expect, actual)
+		}
+		if c.name == "checkForExistFalseUser" {
+			if mockService.SendCount != 1 {
+				t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+			}
+		} else {
+			if mockService.SendCount != 0 {
+				t.Errorf("send Method should not be called, call is %d", mockService.SendCount)
+			}
+		}
 	}
 }
 
+type MockService struct {
+	SendCount int
+}
+
+func (ms *MockService) GetNameByID(id string) (string, error) {
+	name := strings.Replace(id, "ID", "Name", 1)
+	return name, nil
+}
+
 func (ms *MockService) Send(groupID, message string) error {
+	ms.SendCount++
 	return nil
 }
 
