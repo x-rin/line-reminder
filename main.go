@@ -25,11 +25,11 @@ type handler struct {
 }
 
 // SetupRouter - ルーターの初期化を行う
-func SetupRouter(h *handler) *gin.Engine {
+func (h *handler) SetupRouter() *gin.Engine {
 	router := gin.New()
 	v1 := router.Group("/api/v1/")
 	{
-		//v1.POST("reminder", h.Remind)
+		v1.POST("reminder", h.Remind)
 		v1.POST("report", h.Report)
 		v1.POST("check", h.Check)
 		v1.POST("webhook", h.Reply)
@@ -159,7 +159,7 @@ func main() {
 		channelID:     os.Getenv("CHANNEL_ID"),
 		groupID:       os.Getenv("GROUP_ID"),
 	}
-	router := SetupRouter(handler)
+	router := handler.SetupRouter()
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)

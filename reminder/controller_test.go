@@ -36,14 +36,16 @@ func TestLineController_ReplyByWord(t *testing.T) {
 		{name: "unmatchedWord", inputWord: "unmatched", expect: "false"},
 	}
 	for _, c := range cases {
-		req := &http.Request{}
-		actual, err := controller.ReplyByWord(req, "sendMsg", c.inputWord)
-		if err != nil {
-			t.Error("err should not occur")
-		}
-		if actual != c.expect {
-			t.Errorf("status should be %s, actual is %s", c.expect, actual)
-		}
+		t.Run(c.name, func(t *testing.T) {
+			req := &http.Request{}
+			actual, err := controller.ReplyByWord(req, "sendMsg", c.inputWord)
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+		})
 	}
 }
 
@@ -58,13 +60,15 @@ func TestLineController_Report(t *testing.T) {
 		{name: "reportByNewUser", inputID: "newUserID", expect: "true"},
 	}
 	for _, c := range cases {
-		actual, err := controller.Report(c.inputID, "testMsg")
-		if err != nil {
-			t.Error("err should not occur")
-		}
-		if actual != c.expect {
-			t.Errorf("status should be %s, actual is %s", c.expect, actual)
-		}
+		t.Run(c.name, func(t *testing.T) {
+			actual, err := controller.Report(c.inputID, "testMsg")
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+		})
 	}
 }
 
@@ -84,20 +88,22 @@ func TestLineController_Check(t *testing.T) {
 	reminder.SetStatus("existFalseUserID", "false")
 	os.Setenv("EXISTFALSEUSERID_STATUS", "false")
 	for _, c := range cases {
-		mockService.SendCount = 0
-		actual, _ := controller.Check(c.inputID, "testMsg")
-		if actual != c.expect {
-			t.Errorf("status should be %s, actual is %s", c.expect, actual)
-		}
-		if c.name == "checkForExistFalseUser" {
-			if mockService.SendCount != 1 {
-				t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+		t.Run(c.name, func(t *testing.T) {
+			mockService.SendCount = 0
+			actual, _ := controller.Check(c.inputID, "testMsg")
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
 			}
-		} else {
-			if mockService.SendCount != 0 {
-				t.Errorf("send Method should not be called, call is %d", mockService.SendCount)
+			if c.name == "checkForExistFalseUser" {
+				if mockService.SendCount != 1 {
+					t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+				}
+			} else {
+				if mockService.SendCount != 0 {
+					t.Errorf("send Method should not be called, call is %d", mockService.SendCount)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -111,17 +117,19 @@ func TestLineController_Remind(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		mockService.SendCount = 0
-		actual, err := controller.Remind(c.inputID, "testMsg")
-		if err != nil {
-			t.Error("err should not occur")
-		}
-		if actual != c.expect {
-			t.Errorf("status should be %s, actual is %s", c.expect, actual)
-		}
-		if mockService.SendCount != 1 {
-			t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
-		}
+		t.Run(c.name, func(t *testing.T) {
+			mockService.SendCount = 0
+			actual, err := controller.Remind(c.inputID, "testMsg")
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+			if mockService.SendCount != 1 {
+				t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+			}
+		})
 	}
 }
 
