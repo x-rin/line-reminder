@@ -30,7 +30,7 @@ func SetupRouter(h *handler) *gin.Engine {
 	v1 := router.Group("/api/v1/")
 	{
 		//v1.POST("reminder", h.Remind)
-		//v1.POST("report", h.Report)
+		v1.POST("report", h.Report)
 		//v1.POST("check", h.Check)
 		v1.POST("webhook", h.Reply)
 	}
