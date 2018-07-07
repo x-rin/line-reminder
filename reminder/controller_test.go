@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kutsuzawa/line-reminder/reminder"
-	"github.com/line/line-bot-sdk-go/linebot"
 	"os"
 	"strings"
+
+	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 var (
@@ -96,6 +97,30 @@ func TestLineController_Check(t *testing.T) {
 			if mockService.SendCount != 0 {
 				t.Errorf("send Method should not be called, call is %d", mockService.SendCount)
 			}
+		}
+	}
+}
+
+func TestLineController_Remind(t *testing.T) {
+	cases := []struct {
+		name    string
+		inputID string
+		expect  string
+	}{
+		{name: "sendRemind", inputID: "testUserID", expect: "false"},
+	}
+
+	for _, c := range cases {
+		mockService.SendCount = 0
+		actual, err := controller.Remind(c.inputID, "testMsg")
+		if err != nil {
+			t.Error("err should not occur")
+		}
+		if actual != c.expect {
+			t.Errorf("status should be %s, actual is %s", c.expect, actual)
+		}
+		if mockService.SendCount != 1 {
+			t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
 		}
 	}
 }

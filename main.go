@@ -65,16 +65,32 @@ func (h *handler) Check(c *gin.Context) {
 }
 
 // Remind - リマインダーのリクエストを受け取った際のハンドラ
-//func (h *handler) Remind(c *gin.Context) {
-//	controller := New()
-//	id := c.PostForm("id")
-//	status, err := controller.Remind(id)
-//	if err != nil {
-//		h.Response(c, "", err)
-//	} else {
-//		h.Response(c, status, nil)
-//	}
-//}
+func (h *handler) Remind(c *gin.Context) {
+	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
+	if err != nil {
+		h.logger.Error("failed to get channel token")
+		return
+	}
+	client, err := linebot.New(h.channelSecret, *channelToken)
+	if err != nil {
+		h.logger.Error("failed to create line client")
+		return
+	}
+	service := reminder.NewLineService(client)
+	controller := reminder.NewLineController(h.groupID, service)
+	id := c.PostForm("id")
+	status, err := controller.Remind(id, ReminderMessage)
+	if err != nil {
+		h.logger.Error("failed to remind",
+			zap.String("message", err.Error()))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	h.logger.Info("response returned",
+		zap.String("status", status))
+	c.JSON(http.StatusOK, nil)
+	return
+}
 
 // Report - レポートのリクエストを受け取った際のハンドラ
 func (h *handler) Report(c *gin.Context) {

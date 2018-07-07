@@ -3,8 +3,9 @@ package reminder
 import (
 	"net/http"
 
-	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
+
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 // LineService - LineAPIを使用するメソッドを定義
