@@ -63,4 +63,3 @@ func (ls *lineService) Reply(replyToken string, message string) error {
 	}
 	return nil
 }
-

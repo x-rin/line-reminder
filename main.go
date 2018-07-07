@@ -6,15 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kutsuzawa/line-reminder/reminder"
-	"go.uber.org/zap"
 	"github.com/line/line-bot-sdk-go/linebot"
+	"go.uber.org/zap"
 )
 
 var (
 	ReminderMessage = os.Getenv("REMINDER_MESSAGE")
-	ReportMessage = os.Getenv("REPORT_MESSAGE")
-	ReplyMessage = os.Getenv("REPLY_MESSAGE")
-	CheckedMessage = os.Getenv("CHECKED_MESSAGE")
+	ReportMessage   = os.Getenv("REPORT_MESSAGE")
+	ReplyMessage    = os.Getenv("REPLY_MESSAGE")
+	CheckedMessage  = os.Getenv("CHECKED_MESSAGE")
 )
 
 type handler struct {
@@ -72,21 +72,39 @@ func SetupRouter(h *handler) *gin.Engine {
 //}
 
 // Report - レポートのリクエストを受け取った際のハンドラ
-//func (h *handler) Report(c *gin.Context) {
-//	controller := New()
-//	id := c.PostForm("id")
-//	status, err := controller.Report(id)
-//	if err != nil {
-//		h.Response(c, "", err)
-//	} else {
-//		h.Response(c, status, nil)
-//	}
-//}
+func (h *handler) Report(c *gin.Context) {
+	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
+	if err != nil {
+		h.logger.Error("failed to get channel token")
+		return
+	}
+	client, err := linebot.New(h.channelSecret, *channelToken)
+	h.logger.Info("get token",
+		zap.String("token", *channelToken))
+	if err != nil {
+		h.logger.Error("failed to create line client")
+		return
+	}
+	service := reminder.NewLineService(client)
+	controller := reminder.NewLineController(h.groupID, service)
+	id := c.PostForm("id")
+	status, err := controller.Report(id, ReportMessage)
+	if err != nil {
+		h.logger.Error("failed to report",
+			zap.String("message", err.Error()))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	h.logger.Info("response returned",
+		zap.String("status", status))
+	c.JSON(http.StatusOK, nil)
+	return
+}
 
 // Reply - Webhookを受け取った際のハンドラ
 func (h *handler) Reply(c *gin.Context) {
 	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
-	if err != nil{
+	if err != nil {
 		h.logger.Error("failed to get channel token")
 		return
 	}
@@ -103,7 +121,7 @@ func (h *handler) Reply(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("failed to reply",
 			zap.String("message", err.Error()))
-		c.JSON(http.StatusInternalServerError,nil)
+		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 	h.logger.Info("response returned",
@@ -119,8 +137,8 @@ func main() {
 	handler := &handler{
 		logger:        logger,
 		channelSecret: os.Getenv("CHANNEL_SECRET"),
-		channelID: os.Getenv("CHANNEL_ID"),
-		groupID: os.Getenv("GROUP_ID"),
+		channelID:     os.Getenv("CHANNEL_ID"),
+		groupID:       os.Getenv("GROUP_ID"),
 	}
 	router := SetupRouter(handler)
 

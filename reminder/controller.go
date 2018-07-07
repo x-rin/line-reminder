@@ -74,6 +74,7 @@ func (lc *LineController) Report(id, message string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	//TODO: なんかダサい
 	replyMsg := "えらい！"
 	if err := lc.service.Send(lc.groupID, replyMsg); err != nil {
 		return "", err
@@ -92,7 +93,7 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 		return "", err
 	}
 	var status = "false"
-	if msg == word{
+	if msg == word {
 		statusBool, err := SetStatus(event.Source.UserID, "true")
 		if err != nil {
 			return "", err
