@@ -31,7 +31,7 @@ Request example
 <summary>Click to expand code.</summary>
 
 ```javascript
-id=xxxxxxxxxxxxxxxxxxxxx
+id=xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 </details>

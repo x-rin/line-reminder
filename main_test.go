@@ -25,8 +25,9 @@ func TestHandler_WithoutReply(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			name := fmt.Sprintf("line-reminder %s endpoint", c.name)
 			document := &httpdoc.Document{
-				Name: "line-reminder remind endpoint",
+				Name: name,
 				ExcludeHeaders: []string{
 					"Content-Length",
 					"Accept-Encoding",
