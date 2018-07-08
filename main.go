@@ -64,7 +64,7 @@ func (h *handler) do(action string, c *gin.Context) {
 	switch action {
 	case "check":
 		status, statusErr = controller.Check(id, CheckedMessage)
-	case "reminder":
+	case "remind":
 		status, statusErr = controller.Remind(id, ReminderMessage)
 	case "report":
 		status, statusErr = controller.Report(id, ReportMessage)
