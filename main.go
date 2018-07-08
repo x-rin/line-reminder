@@ -53,16 +53,26 @@ func (h *handler) createNewController() (*reminder.LineController, error) {
 	return controller, nil
 }
 
-// Check - ステータスチェックのリクエストを受け取った際のハンドラ
-func (h *handler) Check(c *gin.Context) {
+func (h *handler) do(action string, c *gin.Context) {
 	controller, err := h.createNewController()
 	if err != nil {
 		return
 	}
 	id := c.PostForm("id")
-	status, err := controller.Check(id, CheckedMessage)
-	if err != nil {
-		h.logger.Error("failed to check",
+	var status string
+	var statusErr error
+	switch action {
+	case "check":
+		status, statusErr = controller.Check(id, CheckedMessage)
+	case "reminder":
+		status, statusErr = controller.Remind(id, ReminderMessage)
+	case "report":
+		status, statusErr = controller.Report(id, ReportMessage)
+	case "reply":
+		status, statusErr = controller.ReplyByWord(c.Request, ReplyMessage, ReportMessage)
+	}
+	if statusErr != nil {
+		h.logger.Error("failed to "+action,
 			zap.String("message", err.Error()))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
@@ -70,65 +80,30 @@ func (h *handler) Check(c *gin.Context) {
 	h.logger.Info("response returned",
 		zap.String("status", status))
 	c.JSON(http.StatusOK, nil)
+	return
+}
+
+// Check - ステータスチェックのリクエストを受け取った際のハンドラ
+func (h *handler) Check(c *gin.Context) {
+	h.do("check", c)
 	return
 }
 
 // Remind - リマインダーのリクエストを受け取った際のハンドラ
 func (h *handler) Remind(c *gin.Context) {
-	controller, err := h.createNewController()
-	if err != nil {
-		return
-	}
-	id := c.PostForm("id")
-	status, err := controller.Remind(id, ReminderMessage)
-	if err != nil {
-		h.logger.Error("failed to remind",
-			zap.String("message", err.Error()))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-	h.logger.Info("response returned",
-		zap.String("status", status))
-	c.JSON(http.StatusOK, nil)
+	h.do("remind", c)
 	return
 }
 
 // Report - レポートのリクエストを受け取った際のハンドラ
 func (h *handler) Report(c *gin.Context) {
-	controller, err := h.createNewController()
-	if err != nil {
-		return
-	}
-	id := c.PostForm("id")
-	status, err := controller.Report(id, ReportMessage)
-	if err != nil {
-		h.logger.Error("failed to report",
-			zap.String("message", err.Error()))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-	h.logger.Info("response returned",
-		zap.String("status", status))
-	c.JSON(http.StatusOK, nil)
+	h.do("report", c)
 	return
 }
 
 // Reply - Webhookを受け取った際のハンドラ
 func (h *handler) Reply(c *gin.Context) {
-	controller, err := h.createNewController()
-	if err != nil {
-		return
-	}
-	status, err := controller.ReplyByWord(c.Request, ReplyMessage, ReportMessage)
-	if err != nil {
-		h.logger.Error("failed to reply",
-			zap.String("message", err.Error()))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-	h.logger.Info("response returned",
-		zap.String("status", status))
-	c.JSON(http.StatusOK, nil)
+	h.do("reply", c)
 	return
 }
 
