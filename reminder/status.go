@@ -7,20 +7,24 @@ import (
 )
 
 // GetStatus - 対象のStatusを取得する
-func GetStatus(id string) (bool, string, error) {
+func GetStatus(id string) (bool, error) {
 	statusKey := strings.ToUpper(id) + "_STATUS"
-	status := os.Getenv(statusKey)
-	statusFlag, err := strconv.ParseBool(status)
+	statusStr := os.Getenv(statusKey)
+	status, err := strconv.ParseBool(statusStr)
 	if err != nil {
-		return false, "", err
+		return false, err
 	}
-	return statusFlag, status, nil
+	return status, nil
 }
 
 // SetStatus - 対象のStatusをセットする
-func SetStatus(id string, status string) string {
+func SetStatus(id string, status string) (bool, error) {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	os.Setenv(statusKey, status)
-	changedStatus := os.Getenv(statusKey)
-	return changedStatus
+	statusStr := os.Getenv(statusKey)
+	statusBool, err := strconv.ParseBool(statusStr)
+	if err != nil {
+		return false, err
+	}
+	return statusBool, nil
 }

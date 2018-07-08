@@ -1,106 +1,163 @@
 package reminder_test
 
 import (
-	. "github.com/kutsuzawa/line-reminder/reminder"
+	"net/http"
+	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/kutsuzawa/line-reminder/reminder/mock_reminder"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
 	"os"
+	"strings"
+
+	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-var _ = Describe("Controller", func() {
-	var (
-		c               *gomock.Controller
-		mockLineService *mock_reminder.MockLineService
-		lineController  LineController
-	)
+var (
+	mockService *MockService
+	groupID     string
+	controller  *reminder.LineController
+)
 
-	BeforeEach(func() {
-		c = gomock.NewController(GinkgoT())
-		mockLineService = mock_reminder.NewMockLineService(c)
-		lineController = NewLineController(mockLineService)
-	})
+func TestMain(m *testing.M) {
+	mockService = &MockService{}
+	groupID = "groupID"
+	controller = reminder.NewLineController(groupID, mockService)
+	run := m.Run()
+	os.Exit(run)
+}
 
-	AfterEach(func() {
-		c.Finish()
-	})
-
-	Describe("Check()", func() {
-		Context("when TEST_USER_STATUS env is true", func() {
-			BeforeEach(func() {
-				os.Setenv("TEST_USER_STATUS", "true")
-			})
-			AfterEach(func() {
-				os.Unsetenv("TEST_USER_STATUS")
-			})
-			It("status code is returned, err is nil", func() {
-				status, err := lineController.Check("TEST_USER")
-				Expect(err).To(BeNil())
-				Expect(status).To(Equal("true"))
-			})
+func TestLineController_ReplyByWord(t *testing.T) {
+	t.Helper()
+	cases := []struct {
+		name      string
+		inputWord string
+		expect    string
+	}{
+		{name: "matchedWord", inputWord: "matched", expect: "true"},
+		{name: "unmatchedWord", inputWord: "unmatched", expect: "false"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			req := &http.Request{}
+			actual, err := controller.ReplyByWord(req, "sendMsg", c.inputWord)
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
 		})
-		Context("when TEST_USER_STATUS env is false and problem is nothing", func() {
-			BeforeEach(func() {
-				os.Setenv("TEST_USER_STATUS", "false")
-				mockLineService.EXPECT().GetTargetName("test_user").Return("TEST_USER_NAME", nil).Times(1)
-				os.Setenv("CHECKED_MESSAGE", "hoge")
-				message := "To " + "TEST_USER_NAME" + "\n" + os.Getenv("CHECKED_MESSAGE")
-				mockLineService.EXPECT().Send(message).Return(nil).Times(1)
-			})
-			AfterEach(func() {
-				os.Unsetenv("TEST_USER_STATUS")
-			})
-			It("status code is returned, err is nil", func() {
-				status, err := lineController.Check("test_user")
-				Expect(err).To(BeNil())
-				Expect(status).To(Equal("false"))
-			})
-		})
-		Context("when failing to get profile from line api", func() {
-			BeforeEach(func() {
-				os.Setenv("TEST_USER_STATUS", "false")
-				mockLineService.EXPECT().GetTargetName("test_user").Return("", errors.New("some error")).Times(1)
-			})
-			AfterEach(func() {
-				os.Unsetenv("TEST_USER_STATUS")
-			})
-			It("status code is empty, err is returned", func() {
-				status, err := lineController.Check("test_user")
-				Expect(err).NotTo(BeNil())
-				Expect(status).To(BeEmpty())
-			})
-		})
-		Context("when failing to send message", func() {
-			BeforeEach(func() {
-				os.Setenv("TEST_USER_STATUS", "false")
-				mockLineService.EXPECT().GetTargetName("test_user").Return("TEST_USER_NAME", nil).Times(1)
-				os.Setenv("CHECKED_MESSAGE", "hoge")
-				message := "To " + "TEST_USER_NAME" + "\n" + os.Getenv("CHECKED_MESSAGE")
-				mockLineService.EXPECT().Send(message).Return(errors.New("some error")).Times(1)
-			})
-			AfterEach(func() {
-				os.Unsetenv("TEST_USER_STATUS")
-			})
-			It("status code is empty, err is returned", func() {
-				status, err := lineController.Check("test_user")
-				Expect(err).NotTo(BeNil())
-				Expect(status).To(BeEmpty())
-			})
-		})
-	})
-	//TODO: あとで
-	Describe("Remind()", func() {
+	}
+}
 
-	})
-	//TODO: あとで
-	Describe("Report()", func() {
+func TestLineController_Report(t *testing.T) {
+	t.Helper()
+	cases := []struct {
+		name    string
+		inputID string
+		expect  string
+	}{
+		{name: "reportByExistUser", inputID: "existUserID", expect: "true"},
+		{name: "reportByNewUser", inputID: "newUserID", expect: "true"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			actual, err := controller.Report(c.inputID, "testMsg")
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+		})
+	}
+}
 
-	})
-	//TODO: あとで
-	Describe("Reply()", func() {
+func TestLineController_Check(t *testing.T) {
+	t.Helper()
+	cases := []struct {
+		name    string
+		inputID string
+		expect  string
+	}{
+		{name: "checkForExistTrueUser", inputID: "existTrueUserID", expect: "true"},
+		{name: "checkForExistFalseUser", inputID: "existFalseUserID", expect: "false"},
+		{name: "checkForDoesNotExistUser", inputID: "doesNotExistUserID", expect: ""},
+	}
 
-	})
-})
+	reminder.SetStatus("existTrueUserID", "true")
+	reminder.SetStatus("existFalseUserID", "false")
+	os.Setenv("EXISTFALSEUSERID_STATUS", "false")
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mockService.SendCount = 0
+			actual, _ := controller.Check(c.inputID, "testMsg")
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+			if c.name == "checkForExistFalseUser" {
+				if mockService.SendCount != 1 {
+					t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+				}
+			} else {
+				if mockService.SendCount != 0 {
+					t.Errorf("send Method should not be called, call is %d", mockService.SendCount)
+				}
+			}
+		})
+	}
+}
+
+func TestLineController_Remind(t *testing.T) {
+	cases := []struct {
+		name    string
+		inputID string
+		expect  string
+	}{
+		{name: "sendRemind", inputID: "testUserID", expect: "false"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mockService.SendCount = 0
+			actual, err := controller.Remind(c.inputID, "testMsg")
+			if err != nil {
+				t.Error("err should not occur")
+			}
+			if actual != c.expect {
+				t.Errorf("status should be %s, actual is %s", c.expect, actual)
+			}
+			if mockService.SendCount != 1 {
+				t.Errorf("send Method should be called once, call is %d", mockService.SendCount)
+			}
+		})
+	}
+}
+
+type MockService struct {
+	SendCount int
+}
+
+func (ms *MockService) GetNameByID(id string) (string, error) {
+	name := strings.Replace(id, "ID", "Name", 1)
+	return name, nil
+}
+
+func (ms *MockService) Send(groupID, message string) error {
+	ms.SendCount++
+	return nil
+}
+
+func (ms *MockService) Hear(request *http.Request) (linebot.Event, error) {
+	return linebot.Event{
+		ReplyToken: "replyToken",
+		Type:       "type",
+		Message:    linebot.NewTextMessage("matched"),
+		Source: &linebot.EventSource{
+			UserID: "userID",
+		},
+	}, nil
+}
+
+func (ms *MockService) Reply(replyToken string, message string) error {
+	return nil
+}

@@ -1,103 +1,123 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/kutsuzawa/line-reminder/reminder"
-	"log"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/line/line-bot-sdk-go/linebot"
+	"go.uber.org/zap"
 )
 
+var (
+	ReminderMessage = os.Getenv("REMINDER_MESSAGE")
+	ReportMessage   = os.Getenv("REPORT_MESSAGE")
+	ReplyMessage    = os.Getenv("REPLY_MESSAGE")
+	CheckedMessage  = os.Getenv("CHECKED_MESSAGE")
+)
+
+type handler struct {
+	channelID     string
+	channelSecret string
+	groupID       string
+	logger        *zap.Logger
+}
+
 // SetupRouter - ルーターの初期化を行う
-func SetupRouter() *gin.Engine {
+func (h *handler) SetupRouter() *gin.Engine {
 	router := gin.New()
 	v1 := router.Group("/api/v1/")
 	{
-		v1.POST("reminder", RemindCtr)
-		v1.POST("report", ReportCtr)
-		v1.POST("check", CheckCtr)
-		v1.POST("webhook", ReplyCtr)
+		v1.POST("reminder", h.Remind)
+		v1.POST("report", h.Report)
+		v1.POST("check", h.Check)
+		v1.POST("webhook", h.Reply)
 	}
 	return router
 }
 
-// CheckCtr - ステータスチェックのリクエストを受け取った際のハンドラ
-func CheckCtr(c *gin.Context) {
-	controller := New()
+func (h *handler) createNewController() (*reminder.LineController, error) {
+	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
+	if err != nil {
+		h.logger.Error("failed to get channel token")
+		return nil, err
+	}
+	client, err := linebot.New(h.channelSecret, *channelToken)
+	if err != nil {
+		h.logger.Error("failed to create line client")
+		return nil, err
+	}
+	service := reminder.NewLineService(client)
+	controller := reminder.NewLineController(h.groupID, service)
+	return controller, nil
+}
+
+func (h *handler) do(action string, c *gin.Context) {
+	controller, err := h.createNewController()
+	if err != nil {
+		return
+	}
 	id := c.PostForm("id")
-	status, err := controller.Check(id)
-	if err != nil {
-		Response(c, "", err)
-	} else {
-		Response(c, status, nil)
+	var status string
+	var statusErr error
+	switch action {
+	case "check":
+		status, statusErr = controller.Check(id, CheckedMessage)
+	case "remind":
+		status, statusErr = controller.Remind(id, ReminderMessage)
+	case "report":
+		status, statusErr = controller.Report(id, ReportMessage)
+	case "reply":
+		status, statusErr = controller.ReplyByWord(c.Request, ReplyMessage, ReportMessage)
 	}
+	if statusErr != nil {
+		h.logger.Error("failed to "+action,
+			zap.String("message", err.Error()))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	h.logger.Info("response returned",
+		zap.String("status", status))
+	c.JSON(http.StatusOK, nil)
+	return
 }
 
-// RemindCtr - リマインダーのリクエストを受け取った際のハンドラ
-func RemindCtr(c *gin.Context) {
-	controller := New()
-	id := c.PostForm("id")
-	status, err := controller.Remind(id)
-	if err != nil {
-		Response(c, "", err)
-	} else {
-		Response(c, status, nil)
-	}
+// Check - ステータスチェックのリクエストを受け取った際のハンドラ
+func (h *handler) Check(c *gin.Context) {
+	h.do("check", c)
+	return
 }
 
-// ReportCtr - レポートのリクエストを受け取った際のハンドラ
-func ReportCtr(c *gin.Context) {
-	controller := New()
-	id := c.PostForm("id")
-	status, err := controller.Report(id)
-	if err != nil {
-		Response(c, "", err)
-	} else {
-		Response(c, status, nil)
-	}
+// Remind - リマインダーのリクエストを受け取った際のハンドラ
+func (h *handler) Remind(c *gin.Context) {
+	h.do("remind", c)
+	return
 }
 
-// ReplyCtr - Webhookを受け取った際のハンドラ
-func ReplyCtr(c *gin.Context) {
-	controller := New()
-	status, err := controller.Reply(c.Request)
-	if err != nil {
-		Response(c, "", nil)
-	} else {
-		Response(c, status, nil)
-	}
+// Report - レポートのリクエストを受け取った際のハンドラ
+func (h *handler) Report(c *gin.Context) {
+	h.do("report", c)
+	return
 }
 
-// Response - Responseを返す
-func Response(c *gin.Context, status string, err error) {
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"err": err.Error(),
-		})
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"status": status,
-	})
-}
-
-// New - Controllerを生成
-func New() reminder.LineController {
-	config, err := reminder.NewConfig()
-	if err != nil {
-		log.Fatalln("failing to create config: " + err.Error())
-	}
-	api, err := reminder.NewLineAPI(config)
-	if err != nil {
-		log.Fatalln("failing to create api: " + err.Error())
-	}
-	service := reminder.NewLineService(api)
-	controller := reminder.NewLineController(service)
-	return controller
+// Reply - Webhookを受け取った際のハンドラ
+func (h *handler) Reply(c *gin.Context) {
+	h.do("reply", c)
+	return
 }
 
 func main() {
-	router := SetupRouter()
-	log.Printf("Start Go HTTP Server")
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
+	handler := &handler{
+		logger:        logger,
+		channelSecret: os.Getenv("CHANNEL_SECRET"),
+		channelID:     os.Getenv("CHANNEL_ID"),
+		groupID:       os.Getenv("GROUP_ID"),
+	}
+	router := handler.SetupRouter()
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)

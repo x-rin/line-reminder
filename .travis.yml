@@ -5,12 +5,10 @@ go:
 
 before_install:
   - go get github.com/golang/dep/...
-  - go get -u github.com/onsi/ginkgo/ginkgo
-  - go get -u github.com/onsi/gomega/...
 install:
   - $GOPATH/bin/dep ensure
 script:
-  - $GOPATH/bin/ginkgo -r -v
+  - env HTTPDOC=1 go test github.com/kutsuzawa/line-reminder/...
 
 addons:
   code_climate:
