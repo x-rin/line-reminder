@@ -73,7 +73,7 @@ func (h *handler) do(action string, c *gin.Context) {
 	}
 	if statusErr != nil {
 		h.logger.Error("failed to "+action,
-			zap.String("message", err.Error()))
+			zap.String("message", statusErr.Error()))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
