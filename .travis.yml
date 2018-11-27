@@ -4,7 +4,7 @@ go:
   - 1.11.x
 
 env:
-  - GO11MODULE=on
+  - GO111MODULE=on
 script:
   - go build
   - env HTTPDOC=1 go test github.com/kutsuzawa/line-reminder/...
