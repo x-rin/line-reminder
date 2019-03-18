@@ -1,16 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"go.mercari.io/go-httpdoc"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
-	"strings"
-	"testing"
-
+	"github.com/kataras/iris/httptest"
 	"go.uber.org/zap"
+	"net/http"
+	"os"
+	"testing"
 )
 
 func TestHandler_WithoutReply(t *testing.T) {
@@ -26,22 +21,6 @@ func TestHandler_WithoutReply(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			name := fmt.Sprintf("line-reminder %s endpoint", c.name)
-			document := &httpdoc.Document{
-				Name: name,
-				ExcludeHeaders: []string{
-					"Content-Length",
-					"Accept-Encoding",
-					"User-Agent",
-				},
-			}
-			defer func() {
-				docName := fmt.Sprintf("doc/%s.md", c.name)
-				if err := document.Generate(docName); err != nil {
-					t.Fatalf("err :%s", err)
-				}
-			}()
-
 			logger, _ := zap.NewProduction()
 			handler := &handler{
 				logger:        logger,
@@ -50,36 +29,10 @@ func TestHandler_WithoutReply(t *testing.T) {
 				groupID:       os.Getenv("GROUP_ID"),
 			}
 			router := handler.SetupRouter()
-			mux := http.NewServeMux()
-			description := fmt.Sprintf("%s for a target user", c.name)
-			mux.Handle(c.endpoint, httpdoc.Record(router, document, &httpdoc.RecordOption{
-				Description: description,
-			}))
 
-			testServer := httptest.NewServer(mux)
-			defer testServer.Close()
-			req, err := testNewRequest(fmt.Sprintf("%s%s", testServer.URL, c.endpoint))
-			if err != nil {
-				t.Errorf("err: %s", err)
-			}
-			res, err := http.DefaultClient.Do(req)
-			if err != nil {
-				t.Errorf("err: %s", err)
-			}
-			if res.StatusCode != c.expect {
-				t.Errorf("statusCode should be %d, actual is %d", c.expect, res.StatusCode)
-			}
+			testServer := httptest.New(t, router, )
+			testServer.POST(c.endpoint).WithHeader("Content-Type", "application/x-www-form-urlencoded").
+				WithFormField("id", os.Getenv("TEST_USER_ID")).Expect().Status(http.StatusOK)
 		})
 	}
-}
-
-func testNewRequest(urlStr string) (*http.Request, error) {
-	values := url.Values{}
-	values.Set("id", os.Getenv("TEST_USER_ID"))
-	req, err := http.NewRequest("POST", urlStr, strings.NewReader(values.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return req, nil
 }
