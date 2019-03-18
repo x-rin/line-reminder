@@ -29,12 +29,12 @@ type handler struct {
 // SetupRouter - ルーターの初期化を行う
 func (h *handler) SetupRouter() *iris.Application {
 	router := iris.Default()
-	v1 := router.Party("/api/v1/")
+	v1 := router.Party("/api/v1")
 	{
-		v1.Post("reminder", h.Remind)
-		v1.Post("report", h.Report)
-		v1.Post("check", h.Check)
-		v1.Post("webhook", h.Reply)
+		v1.Post("/reminder", h.Remind)
+		v1.Post("/report", h.Report)
+		v1.Post("/check", h.Check)
+		v1.Post("/webhook", h.Reply)
 	}
 	return router
 }
