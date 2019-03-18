@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/kataras/iris/httptest"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/kataras/iris/httptest"
+	"go.uber.org/zap"
 )
 
 func TestHandler_WithoutReply(t *testing.T) {
@@ -30,7 +31,7 @@ func TestHandler_WithoutReply(t *testing.T) {
 			}
 			router := handler.SetupRouter()
 
-			testServer := httptest.New(t, router, )
+			testServer := httptest.New(t, router)
 			testServer.POST(c.endpoint).WithHeader("Content-Type", "application/x-www-form-urlencoded").
 				WithFormField("id", os.Getenv("TEST_USER_ID")).Expect().Status(http.StatusOK)
 		})
