@@ -1,15 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"go.mercari.io/go-httpdoc"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
-	"fmt"
+
+	"go.uber.org/zap"
 )
 
 func TestHandler_WithoutReply(t *testing.T) {
@@ -63,7 +64,7 @@ func TestHandler_WithoutReply(t *testing.T) {
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
-			if res.StatusCode != c.expect{
+			if res.StatusCode != c.expect {
 				t.Fatalf("statusCode should be %d, actual is %d", c.expect, res.StatusCode)
 			}
 		})

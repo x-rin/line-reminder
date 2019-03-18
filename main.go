@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/kataras/iris"
 	"net/http"
 	"os"
+
+	"github.com/kataras/iris"
 
 	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/line/line-bot-sdk-go/linebot"
