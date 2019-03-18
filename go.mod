@@ -26,6 +26,7 @@ require (
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/line/line-bot-sdk-go v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
+	github.com/mercari/go-httpdoc v0.2.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.8.0 // indirect
