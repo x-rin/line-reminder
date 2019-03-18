@@ -82,7 +82,6 @@ func (h *handler) do(action string, ctx iris.Context) {
 	h.logger.Info("response returned",
 		zap.String("status", status))
 	ctx.StatusCode(http.StatusOK)
-	ctx.Write(nil)
 	return
 }
 

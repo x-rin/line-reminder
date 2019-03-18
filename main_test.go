@@ -58,26 +58,28 @@ func TestHandler_WithoutReply(t *testing.T) {
 
 			testServer := httptest.NewServer(mux)
 			defer testServer.Close()
-
-			req := testNewRequest(t, testServer.URL+c.endpoint)
+			req, err := testNewRequest(fmt.Sprintf("%s%s", testServer.URL, c.endpoint))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
 			res, err := http.DefaultClient.Do(req)
 			if err != nil {
-				t.Fatalf("err: %s", err)
+				t.Errorf("err: %s", err)
 			}
 			if res.StatusCode != c.expect {
-				t.Fatalf("statusCode should be %d, actual is %d", c.expect, res.StatusCode)
+				t.Errorf("statusCode should be %d, actual is %d", c.expect, res.StatusCode)
 			}
 		})
 	}
 }
 
-func testNewRequest(t *testing.T, urlStr string) *http.Request {
+func testNewRequest(urlStr string) (*http.Request, error) {
 	values := url.Values{}
 	values.Set("id", os.Getenv("TEST_USER_ID"))
 	req, err := http.NewRequest("POST", urlStr, strings.NewReader(values.Encode()))
 	if err != nil {
-		t.Fatalf("err: %s", err)
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return req
+	return req, nil
 }
