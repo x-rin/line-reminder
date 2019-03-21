@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/kataras/iris"
+
 	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"go.uber.org/zap"
@@ -25,14 +27,14 @@ type handler struct {
 }
 
 // SetupRouter - ルーターの初期化を行う
-func (h *handler) SetupRouter() *gin.Engine {
-	router := gin.New()
-	v1 := router.Group("/api/v1/")
+func (h *handler) SetupRouter() *iris.Application {
+	router := iris.Default()
+	v1 := router.Party("/api/v1")
 	{
-		v1.POST("reminder", h.Remind)
-		v1.POST("report", h.Report)
-		v1.POST("check", h.Check)
-		v1.POST("webhook", h.Reply)
+		v1.Post("/reminder", h.Remind)
+		v1.Post("/report", h.Report)
+		v1.Post("/check", h.Check)
+		v1.Post("/webhook", h.Reply)
 	}
 	return router
 }
@@ -53,12 +55,12 @@ func (h *handler) createNewController() (*reminder.LineController, error) {
 	return controller, nil
 }
 
-func (h *handler) do(action string, c *gin.Context) {
+func (h *handler) do(action string, ctx iris.Context) {
 	controller, err := h.createNewController()
 	if err != nil {
 		return
 	}
-	id := c.PostForm("id")
+	id := ctx.FormValue("id")
 	var status string
 	var statusErr error
 	switch action {
@@ -69,41 +71,41 @@ func (h *handler) do(action string, c *gin.Context) {
 	case "report":
 		status, statusErr = controller.Report(id, ReportMessage)
 	case "reply":
-		status, statusErr = controller.ReplyByWord(c.Request, ReplyMessage, ReportMessage)
+		status, statusErr = controller.ReplyByWord(ctx.Request(), ReplyMessage, ReportMessage)
 	}
 	if statusErr != nil {
 		h.logger.Error("failed to "+action,
 			zap.String("message", statusErr.Error()))
-		c.JSON(http.StatusInternalServerError, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
 		return
 	}
 	h.logger.Info("response returned",
 		zap.String("status", status))
-	c.JSON(http.StatusOK, nil)
+	ctx.StatusCode(http.StatusOK)
 	return
 }
 
 // Check - ステータスチェックのリクエストを受け取った際のハンドラ
-func (h *handler) Check(c *gin.Context) {
-	h.do("check", c)
+func (h *handler) Check(ctx iris.Context) {
+	h.do("check", ctx)
 	return
 }
 
 // Remind - リマインダーのリクエストを受け取った際のハンドラ
-func (h *handler) Remind(c *gin.Context) {
-	h.do("remind", c)
+func (h *handler) Remind(ctx iris.Context) {
+	h.do("remind", ctx)
 	return
 }
 
 // Report - レポートのリクエストを受け取った際のハンドラ
-func (h *handler) Report(c *gin.Context) {
-	h.do("report", c)
+func (h *handler) Report(ctx iris.Context) {
+	h.do("report", ctx)
 	return
 }
 
 // Reply - Webhookを受け取った際のハンドラ
-func (h *handler) Reply(c *gin.Context) {
-	h.do("reply", c)
+func (h *handler) Reply(ctx iris.Context) {
+	h.do("reply", ctx)
 	return
 }
 
@@ -117,8 +119,9 @@ func main() {
 		channelID:     os.Getenv("CHANNEL_ID"),
 		groupID:       os.Getenv("GROUP_ID"),
 	}
+
 	router := handler.SetupRouter()
 
 	port := os.Getenv("PORT")
-	router.Run(":" + port)
+	router.Run(iris.Addr(fmt.Sprintf(":%s", port)))
 }

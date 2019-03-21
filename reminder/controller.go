@@ -33,7 +33,7 @@ func (lc *LineController) Check(id, message string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		//e.g To cappyzawa
+		// e.g To cappyzawa
 		// Good Morning
 		msg := fmt.Sprintf("To %s\n%s", target, message)
 		if err := lc.service.Send(lc.groupID, msg); err != nil {

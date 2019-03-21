@@ -1,15 +1,12 @@
 package main
 
 import (
-	"go.mercari.io/go-httpdoc"
-	"go.uber.org/zap"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"os"
-	"strings"
 	"testing"
-	"fmt"
+
+	"github.com/kataras/iris/httptest"
+	"go.uber.org/zap"
 )
 
 func TestHandler_WithoutReply(t *testing.T) {
@@ -25,22 +22,6 @@ func TestHandler_WithoutReply(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			name := fmt.Sprintf("line-reminder %s endpoint", c.name)
-			document := &httpdoc.Document{
-				Name: name,
-				ExcludeHeaders: []string{
-					"Content-Length",
-					"Accept-Encoding",
-					"User-Agent",
-				},
-			}
-			defer func() {
-				docName := fmt.Sprintf("doc/%s.md", c.name)
-				if err := document.Generate(docName); err != nil {
-					t.Fatalf("err :%s", err)
-				}
-			}()
-
 			logger, _ := zap.NewProduction()
 			handler := &handler{
 				logger:        logger,
@@ -49,34 +30,10 @@ func TestHandler_WithoutReply(t *testing.T) {
 				groupID:       os.Getenv("GROUP_ID"),
 			}
 			router := handler.SetupRouter()
-			mux := http.NewServeMux()
-			description := fmt.Sprintf("%s for a target user", c.name)
-			mux.Handle(c.endpoint, httpdoc.Record(router, document, &httpdoc.RecordOption{
-				Description: description,
-			}))
 
-			testServer := httptest.NewServer(mux)
-			defer testServer.Close()
-
-			req := testNewRequest(t, testServer.URL+c.endpoint)
-			res, err := http.DefaultClient.Do(req)
-			if err != nil {
-				t.Fatalf("err: %s", err)
-			}
-			if res.StatusCode != c.expect{
-				t.Fatalf("statusCode should be %d, actual is %d", c.expect, res.StatusCode)
-			}
+			testServer := httptest.New(t, router)
+			testServer.POST(c.endpoint).WithHeader("Content-Type", "application/x-www-form-urlencoded").
+				WithFormField("id", os.Getenv("TEST_USER_ID")).Expect().Status(http.StatusOK)
 		})
 	}
-}
-
-func testNewRequest(t *testing.T, urlStr string) *http.Request {
-	values := url.Values{}
-	values.Set("id", os.Getenv("TEST_USER_ID"))
-	req, err := http.NewRequest("POST", urlStr, strings.NewReader(values.Encode()))
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return req
 }
