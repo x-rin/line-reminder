@@ -61,7 +61,12 @@ func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
 }
 
 func (ls *lineService) Reply(replyToken string, message string) error {
-	msgRequest := ls.client.ReplyMessage(replyToken, linebot.NewTextMessage(message))
+	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
+	button := linebot.NewQuickReplyButton("https://www.aomori-ringo.or.jp/wp-content/uploads/2018/06/wasefuji.png", messageAction)
+	reply := linebot.NewQuickReplyItems(button)
+	textMessage := linebot.NewTextMessage(message)
+	//msgRequest := ls.client.ReplyMessage(replyToken, linebot.NewTextMessage(message))
+	msgRequest := ls.client.ReplyMessage(replyToken, textMessage.WithQuickReplies(reply))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
