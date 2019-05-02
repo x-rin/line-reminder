@@ -101,7 +101,7 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 		if err := lc.service.Reply(event.ReplyToken, message); err != nil {
 			return "", err
 		}
-	} else if msg == "info" {
+	} else if msg.Text == "info" {
 		groupID := event.Source.GroupID
 		userID := event.Source.UserID
 		if err := lc.service.Reply(event.ReplyToken, fmt.Sprintf("GroupID: %s\n\nUserID: %s", groupID, userID)); err != nil {
