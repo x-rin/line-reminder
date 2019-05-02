@@ -13,6 +13,14 @@ type LineController struct {
 	service LineService
 }
 
+type LineResponse struct {
+	Message struct {
+		ID   string `json:"id"`
+		Type string `json:"type"`
+		Text string `json:"text"`
+	} `json:"message"`
+}
+
 // NewLineController - コントローラーを生成
 func NewLineController(groupID string, service LineService) *LineController {
 	return &LineController{
