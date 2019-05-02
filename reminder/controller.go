@@ -1,7 +1,6 @@
 package reminder
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -82,18 +81,18 @@ func (lc *LineController) Report(id, message string) (string, error) {
 	return strconv.FormatBool(status), nil
 }
 
-// Reply - 対象の投稿を受け取り、statusをtrueに更新した後に返信する
+// ReplyByWord - 対象の投稿を受け取り、statusをtrueに更新した後に返信する
 func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (string, error) {
 	event, err := lc.service.Hear(req)
 	if err != nil {
 		return "", err
 	}
-	msg, err := lc.extractMessage(event)
-	if err != nil {
-		return "", err
+	msg, ok := event.Message.(*linebot.TextMessage)
+	if !ok {
+		return "", nil
 	}
 	var status = "false"
-	if msg == word {
+	if msg.Text == word {
 		statusBool, err := SetStatus(event.Source.UserID, "true")
 		if err != nil {
 			return "", err
@@ -102,7 +101,7 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 		if err := lc.service.Reply(event.ReplyToken, message); err != nil {
 			return "", err
 		}
-	} else if msg == "info" {
+	} else if msg.Text == "info" {
 		groupID := event.Source.GroupID
 		userID := event.Source.UserID
 		if err := lc.service.Reply(event.ReplyToken, fmt.Sprintf("GroupID: %s\n\nUserID: %s", groupID, userID)); err != nil {
@@ -110,13 +109,4 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 		}
 	}
 	return status, nil
-}
-
-func (lc *LineController) extractMessage(event linebot.Event) (string, error) {
-	textMsg := new(linebot.TextMessage)
-	byteMsg, _ := event.Message.MarshalJSON()
-	if err := json.Unmarshal(byteMsg, textMsg); err != nil {
-		return "", err
-	}
-	return textMsg.Text, nil
 }

@@ -35,7 +35,7 @@ func (ls *lineService) GetNameByID(id string) (string, error) {
 }
 
 func (ls *lineService) Send(groupID, message string) error {
-	msgRequest := ls.client.PushMessage(groupID, linebot.NewTextMessage(message))
+	msgRequest := ls.client.PushMessage(groupID, ls.quickReplyMessage(message))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
@@ -51,15 +51,23 @@ func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
 	for _, event := range received {
 		//log.Println("groupId: " + event.Source.GroupID)
 		//log.Println("userId: " + event.Source.UserID)
-		retEvent = event
+		retEvent = *event
 	}
 	return retEvent, nil
 }
 
 func (ls *lineService) Reply(replyToken string, message string) error {
-	msgRequest := ls.client.ReplyMessage(replyToken, linebot.NewTextMessage(message))
+	msgRequest := ls.client.ReplyMessage(replyToken, ls.quickReplyMessage(message))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (ls *lineService) quickReplyMessage(mainMessage string) linebot.SendingMessage {
+	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
+	button := linebot.NewQuickReplyButton("https://3.bp.blogspot.com/-ISR6kWE9qmQ/WKFjEmZH4qI/AAAAAAABBt4/pIxJecwGkZYwKuYLcbk1cfMOSVc43OclwCLcB/s800/medical_tablet1_white.png", messageAction)
+	quickReply := linebot.NewQuickReplyItems(button)
+	textMessage := linebot.NewTextMessage(mainMessage)
+	return textMessage.WithQuickReplies(quickReply)
 }

@@ -103,3 +103,5 @@ Temporary Items
 vendor/
 
 set-env.rc
+
+.envrc
