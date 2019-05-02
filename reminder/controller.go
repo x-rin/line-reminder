@@ -1,7 +1,6 @@
 package reminder
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -88,12 +87,12 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 	if err != nil {
 		return "", err
 	}
-	msg, err := lc.extractMessage(event)
+	msg := event.Message.(*linebot.TextMessage)
 	if err != nil {
 		return "", err
 	}
 	var status = "false"
-	if msg == word {
+	if msg.Text == word {
 		statusBool, err := SetStatus(event.Source.UserID, "true")
 		if err != nil {
 			return "", err
@@ -104,13 +103,4 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 		}
 	}
 	return status, nil
-}
-
-func (lc *LineController) extractMessage(event linebot.Event) (string, error) {
-	textMsg := new(linebot.TextMessage)
-	byteMsg, _ := event.MarshalJSON()
-	if err := json.Unmarshal(byteMsg, textMsg); err != nil {
-		return "", err
-	}
-	return textMsg.Text, nil
 }
