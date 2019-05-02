@@ -35,7 +35,11 @@ func (ls *lineService) GetNameByID(id string) (string, error) {
 }
 
 func (ls *lineService) Send(groupID, message string) error {
-	msgRequest := ls.client.PushMessage(groupID, linebot.NewTextMessage(message))
+	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
+	button := linebot.NewQuickReplyButton("https://www.aomori-ringo.or.jp/wp-content/uploads/2018/06/wasefuji.png", messageAction)
+	reply := linebot.NewQuickReplyItems(button)
+	textMessage := linebot.NewTextMessage(message)
+	msgRequest := ls.client.PushMessage(groupID, textMessage.WithQuickReplies(reply))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
@@ -51,7 +55,7 @@ func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
 	for _, event := range received {
 		//log.Println("groupId: " + event.Source.GroupID)
 		//log.Println("userId: " + event.Source.UserID)
-		retEvent = event
+		retEvent = *event
 	}
 	return retEvent, nil
 }

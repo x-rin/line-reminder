@@ -82,7 +82,7 @@ func (lc *LineController) Report(id, message string) (string, error) {
 	return strconv.FormatBool(status), nil
 }
 
-// Reply - 対象の投稿を受け取り、statusをtrueに更新した後に返信する
+// ReplyByWord - 対象の投稿を受け取り、statusをtrueに更新した後に返信する
 func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (string, error) {
 	event, err := lc.service.Hear(req)
 	if err != nil {
@@ -108,7 +108,7 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 
 func (lc *LineController) extractMessage(event linebot.Event) (string, error) {
 	textMsg := new(linebot.TextMessage)
-	byteMsg, _ := event.Message.MarshalJSON()
+	byteMsg, _ := event.MarshalJSON()
 	if err := json.Unmarshal(byteMsg, textMsg); err != nil {
 		return "", err
 	}
