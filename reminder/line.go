@@ -66,7 +66,7 @@ func (ls *lineService) Reply(replyToken string, message string) error {
 
 func (ls *lineService) quickReplyMessage(mainMessage string) linebot.SendingMessage {
 	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
-	button := linebot.NewQuickReplyButton("https://www.aomori-ringo.or.jp/wp-content/uploads/2018/06/wasefuji.png", messageAction)
+	button := linebot.NewQuickReplyButton("https://3.bp.blogspot.com/-ISR6kWE9qmQ/WKFjEmZH4qI/AAAAAAABBt4/pIxJecwGkZYwKuYLcbk1cfMOSVc43OclwCLcB/s800/medical_tablet1_white.png", messageAction)
 	quickReply := linebot.NewQuickReplyItems(button)
 	textMessage := linebot.NewTextMessage(mainMessage)
 	return textMessage.WithQuickReplies(quickReply)
