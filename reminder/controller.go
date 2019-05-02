@@ -87,9 +87,9 @@ func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (
 	if err != nil {
 		return "", err
 	}
-	msg := event.Message.(*linebot.TextMessage)
-	if err != nil {
-		return "", err
+	msg, ok := event.Message.(*linebot.TextMessage)
+	if !ok {
+		return "", nil
 	}
 	var status = "false"
 	if msg.Text == word {
