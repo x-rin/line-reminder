@@ -35,11 +35,7 @@ func (ls *lineService) GetNameByID(id string) (string, error) {
 }
 
 func (ls *lineService) Send(groupID, message string) error {
-	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
-	button := linebot.NewQuickReplyButton("https://www.aomori-ringo.or.jp/wp-content/uploads/2018/06/wasefuji.png", messageAction)
-	reply := linebot.NewQuickReplyItems(button)
-	textMessage := linebot.NewTextMessage(message)
-	msgRequest := ls.client.PushMessage(groupID, textMessage.WithQuickReplies(reply))
+	msgRequest := ls.client.PushMessage(groupID, ls.quickReplyMessage(message))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
@@ -61,14 +57,17 @@ func (ls *lineService) Hear(request *http.Request) (linebot.Event, error) {
 }
 
 func (ls *lineService) Reply(replyToken string, message string) error {
-	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
-	button := linebot.NewQuickReplyButton("https://www.aomori-ringo.or.jp/wp-content/uploads/2018/06/wasefuji.png", messageAction)
-	reply := linebot.NewQuickReplyItems(button)
-	textMessage := linebot.NewTextMessage(message)
-	//msgRequest := ls.client.ReplyMessage(replyToken, linebot.NewTextMessage(message))
-	msgRequest := ls.client.ReplyMessage(replyToken, textMessage.WithQuickReplies(reply))
+	msgRequest := ls.client.ReplyMessage(replyToken, ls.quickReplyMessage(message))
 	if _, err := msgRequest.Do(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (ls *lineService) quickReplyMessage(mainMessage string) linebot.SendingMessage {
+	messageAction := linebot.NewMessageAction("飲みました", "飲みました")
+	button := linebot.NewQuickReplyButton("https://3.bp.blogspot.com/-ISR6kWE9qmQ/WKFjEmZH4qI/AAAAAAABBt4/pIxJecwGkZYwKuYLcbk1cfMOSVc43OclwCLcB/s800/medical_tablet1_white.png", messageAction)
+	quickReply := linebot.NewQuickReplyItems(button)
+	textMessage := linebot.NewTextMessage(mainMessage)
+	return textMessage.WithQuickReplies(quickReply)
 }
