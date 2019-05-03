@@ -36,13 +36,16 @@ func NewLineHandler(groupID string, service service.LineService, logger *zap.Log
 
 func (lc *LineHandler) getID(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 		lc.id = r.URL.Query().Get("id")
 		next.ServeHTTP(w, r)
 	}
 }
 
 func (lc *LineHandler) check(w http.ResponseWriter, r *http.Request) {
-	//TODO: id が空のときの処理を書いてあげたほう丁寧
 	status, err := util.GetStatus(lc.id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
