@@ -10,6 +10,9 @@ import (
 func GetStatus(id string) (bool, error) {
 	statusKey := strings.ToUpper(id) + "_STATUS"
 	statusStr := os.Getenv(statusKey)
+	if statusStr == "" {
+		statusStr = "true"
+	}
 	status, err := strconv.ParseBool(statusStr)
 	if err != nil {
 		return false, err
