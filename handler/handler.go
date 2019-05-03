@@ -33,34 +33,6 @@ func NewLineHandler(groupID string, service service.LineService, logger *zap.Log
 	}
 }
 
-func (lc *LineHandler) Check(w http.ResponseWriter, r *http.Request) {
-	id, ok := r.Context().Value("UserID").(string)
-	if !ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	status, err := util.GetStatus(id)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if !status {
-		target, err := lc.service.GetNameByID(id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		// e.g To cappyzawa
-		// Good Morning
-		msg := fmt.Sprintf("To %s\n%s", target, lc.checkedMessage)
-		if err := lc.service.Send(lc.groupID, msg); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
 func (lc *LineHandler) Remind(w http.ResponseWriter, r *http.Request) {
 	id, ok := r.Context().Value("UserID").(string)
 	if !ok {

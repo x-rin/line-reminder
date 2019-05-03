@@ -23,7 +23,6 @@ type API struct {
 
 func (a *API) run(port string) error {
 	endpointPrefix := "/api/v1"
-	http.HandleFunc(endpointPrefix+"/check", middleware.GetID(a.handler.Check))
 	http.HandleFunc(endpointPrefix+"/remind", middleware.GetID(a.handler.Remind))
 	http.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
 	http.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
