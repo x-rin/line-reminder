@@ -31,7 +31,6 @@ func GetChannelToken(clientID, clientSecret string) (*string, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-
 	var authResponse authResponse
 	decoder := json.NewDecoder(res.Body)
 	if err := decoder.Decode(&authResponse); err != nil {

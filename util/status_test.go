@@ -1,10 +1,10 @@
-package reminder_test
+package util_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/kutsuzawa/line-reminder/util"
 )
 
 func TestGetStatus(t *testing.T) {
@@ -19,7 +19,7 @@ func TestGetStatus(t *testing.T) {
 	}
 	os.Setenv("EXISTID_STATUS", "true")
 	for i, c := range cases {
-		actual, err := reminder.GetStatus(c.input)
+		actual, err := util.GetStatus(c.input)
 		if i == 0 {
 			if err != nil {
 				t.Error("err should not occur")
@@ -46,7 +46,7 @@ func TestSetStatus(t *testing.T) {
 		{name: "setFalse", input: "false", expect: false},
 	}
 	for _, c := range cases {
-		actual, err := reminder.SetStatus("hoge", c.input)
+		actual, err := util.SetStatus("hoge", c.input)
 		if err != nil {
 			t.Error("err should not occur")
 		}

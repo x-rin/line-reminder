@@ -105,3 +105,4 @@ vendor/
 set-env.rc
 
 .envrc
+line-reminder
