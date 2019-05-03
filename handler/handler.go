@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/kutsuzawa/line-reminder/service"
 	"github.com/kutsuzawa/line-reminder/util"
@@ -11,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type LineController struct {
+type LineHandler struct {
 	logger         *zap.Logger
 	remindMessage  string
 	reportMessage  string
@@ -22,9 +21,9 @@ type LineController struct {
 	id             string
 }
 
-// NewLineController - コントローラーを生成
-func NewLineController(groupID string, service service.LineService, logger *zap.Logger, remindMessage, reportMessage, replyMessage, checkedMessage string) *LineController {
-	return &LineController{
+// NewLineHandler - コントローラーを生成
+func NewLineHandler(groupID string, service service.LineService, logger *zap.Logger, remindMessage, reportMessage, replyMessage, checkedMessage string) *LineHandler {
+	return &LineHandler{
 		groupID:        groupID,
 		service:        service,
 		logger:         logger,
@@ -35,35 +34,14 @@ func NewLineController(groupID string, service service.LineService, logger *zap.
 	}
 }
 
-func (lc *LineController) getID(next http.HandlerFunc) http.HandlerFunc {
+func (lc *LineHandler) getID(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lc.id = r.URL.Query().Get("id")
 		next.ServeHTTP(w, r)
 	}
 }
 
-// Check - 対象のstatusをcheckして、falseの場合メッセージを送信する
-func (lc *LineController) Check(id, message string) (string, error) {
-	status, err := util.GetStatus(id)
-	if err != nil {
-		return "", err
-	}
-	if !status {
-		target, err := lc.service.GetNameByID(id)
-		if err != nil {
-			return "", err
-		}
-		// e.g To cappyzawa
-		// Good Morning
-		msg := fmt.Sprintf("To %s\n%s", target, message)
-		if err := lc.service.Send(lc.groupID, msg); err != nil {
-			return "", err
-		}
-	}
-	return strconv.FormatBool(status), nil
-}
-
-func (lc *LineController) check(w http.ResponseWriter, r *http.Request) {
+func (lc *LineHandler) check(w http.ResponseWriter, r *http.Request) {
 	//TODO: id が空のときの処理を書いてあげたほう丁寧
 	status, err := util.GetStatus(lc.id)
 	if err != nil {
@@ -87,24 +65,7 @@ func (lc *LineController) check(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Remind - 対象にメッセージを送信し、statusをfalseに更新する
-func (lc *LineController) Remind(id, message string) (string, error) {
-	target, err := lc.service.GetNameByID(id)
-	if err != nil {
-		return "", err
-	}
-	status, err := util.SetStatus(id, "false")
-	if err != nil {
-		return "", err
-	}
-	msg := fmt.Sprintf("To %s\n%s", target, message)
-	if err := lc.service.Send(lc.groupID, msg); err != nil {
-		return "", err
-	}
-	return strconv.FormatBool(status), nil
-}
-
-func (lc *LineController) remind(w http.ResponseWriter, r *http.Request) {
+func (lc *LineHandler) remind(w http.ResponseWriter, r *http.Request) {
 	target, err := lc.service.GetNameByID(lc.id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -124,29 +85,7 @@ func (lc *LineController) remind(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Report - リマインダーを実行したことを報告し、statusをtrueに更新する
-func (lc *LineController) Report(id, message string) (string, error) {
-	source, err := lc.service.GetNameByID(id)
-	if err != nil {
-		return "", err
-	}
-	msg := fmt.Sprintf("%s\nby %s", message, source)
-	if err := lc.service.Send(lc.groupID, msg); err != nil {
-		return "", err
-	}
-	status, err := util.SetStatus(id, "true")
-	if err != nil {
-		return "", err
-	}
-	//TODO: なんかダサい
-	replyMsg := "えらい！"
-	if err := lc.service.Send(lc.groupID, replyMsg); err != nil {
-		return "", err
-	}
-	return strconv.FormatBool(status), nil
-}
-
-func (lc *LineController) report(w http.ResponseWriter, r *http.Request) {
+func (lc *LineHandler) report(w http.ResponseWriter, r *http.Request) {
 	source, err := lc.service.GetNameByID(lc.id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -172,37 +111,7 @@ func (lc *LineController) report(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// ReplyByWord - 対象の投稿を受け取り、statusをtrueに更新した後に返信する
-func (lc *LineController) ReplyByWord(req *http.Request, message, word string) (string, error) {
-	event, err := lc.service.Hear(req)
-	if err != nil {
-		return "", err
-	}
-	msg, ok := event.Message.(*linebot.TextMessage)
-	if !ok {
-		return "", nil
-	}
-	var status = "false"
-	if msg.Text == word {
-		statusBool, err := util.SetStatus(event.Source.UserID, "true")
-		if err != nil {
-			return "", err
-		}
-		status = strconv.FormatBool(statusBool)
-		if err := lc.service.Reply(event.ReplyToken, message); err != nil {
-			return "", err
-		}
-	} else if msg.Text == "info" {
-		groupID := event.Source.GroupID
-		userID := event.Source.UserID
-		if err := lc.service.Reply(event.ReplyToken, fmt.Sprintf("GroupID: %s\n\nUserID: %s", groupID, userID)); err != nil {
-			return "", err
-		}
-	}
-	return status, nil
-}
-
-func (lc *LineController) reply(w http.ResponseWriter, r *http.Request) {
+func (lc *LineHandler) reply(w http.ResponseWriter, r *http.Request) {
 	event, err := lc.service.Hear(r)
 	message := lc.replyMessage
 	word := lc.reportMessage
@@ -237,17 +146,12 @@ func (lc *LineController) reply(w http.ResponseWriter, r *http.Request) {
 
 }
 
-type logger interface {
-	// TODO: ださい
-	Sync()
-}
-
-func (lc *LineController) Run(port string) {
+func (lc *LineHandler) Run(port string) error {
 	endpointPrefix := "api/v1"
 	http.HandleFunc(endpointPrefix+"/check", lc.getID(lc.check))
 	http.HandleFunc(endpointPrefix+"/remind", lc.getID(lc.remind))
 	http.HandleFunc(endpointPrefix+"/report", lc.getID(lc.report))
 	http.HandleFunc(endpointPrefix+"/reply", lc.getID(lc.reply))
 
-	http.ListenAndServe(":"+port, nil)
+	return http.ListenAndServe(":"+port, nil)
 }
