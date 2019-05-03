@@ -36,10 +36,8 @@ func TestJoin(t *testing.T) {
 		os.Getenv("GROUP_ID"),
 		service,
 		logger,
-		os.Getenv("REMINDER_MESSAGE"),
 		os.Getenv("REPORT_MESSAGE"),
 		os.Getenv("REPLY_MESSAGE"),
-		os.Getenv("CHECKED_MESSAGE"),
 	)
 	api := &API{handler}
 
@@ -49,7 +47,6 @@ func TestJoin(t *testing.T) {
 		expect   int
 		handler  http.Handler
 	}{
-		{name: "remind", endpoint: base + "/remind", expect: http.StatusOK, handler: middleware.GetID(api.handler.Remind)},
 		{name: "report", endpoint: base + "/report", expect: http.StatusOK, handler: middleware.GetID(api.handler.Report)},
 	}
 
