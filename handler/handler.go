@@ -18,7 +18,6 @@ type LineHandler struct {
 	checkedMessage string
 	groupID        string
 	service        service.LineService
-	id             string
 }
 
 // NewLineHandler - コントローラーを生成
@@ -34,25 +33,19 @@ func NewLineHandler(groupID string, service service.LineService, logger *zap.Log
 	}
 }
 
-func (lc *LineHandler) getID(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		lc.id = r.URL.Query().Get("id")
-		next.ServeHTTP(w, r)
+func (lc *LineHandler) Check(w http.ResponseWriter, r *http.Request) {
+	id, ok := r.Context().Value("UserID").(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-}
-
-func (lc *LineHandler) check(w http.ResponseWriter, r *http.Request) {
-	status, err := util.GetStatus(lc.id)
+	status, err := util.GetStatus(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if !status {
-		target, err := lc.service.GetNameByID(lc.id)
+		target, err := lc.service.GetNameByID(id)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -68,13 +61,18 @@ func (lc *LineHandler) check(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (lc *LineHandler) remind(w http.ResponseWriter, r *http.Request) {
-	target, err := lc.service.GetNameByID(lc.id)
+func (lc *LineHandler) Remind(w http.ResponseWriter, r *http.Request) {
+	id, ok := r.Context().Value("UserID").(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	target, err := lc.service.GetNameByID(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	_, err = util.SetStatus(lc.id, "false")
+	_, err = util.SetStatus(id, "false")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -88,8 +86,13 @@ func (lc *LineHandler) remind(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (lc *LineHandler) report(w http.ResponseWriter, r *http.Request) {
-	source, err := lc.service.GetNameByID(lc.id)
+func (lc *LineHandler) Report(w http.ResponseWriter, r *http.Request) {
+	id, ok := r.Context().Value("UserID").(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	source, err := lc.service.GetNameByID(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -99,7 +102,7 @@ func (lc *LineHandler) report(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	_, err = util.SetStatus(lc.id, "true")
+	_, err = util.SetStatus(id, "true")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -114,7 +117,7 @@ func (lc *LineHandler) report(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (lc *LineHandler) reply(w http.ResponseWriter, r *http.Request) {
+func (lc *LineHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	event, err := lc.service.Hear(r)
 	message := lc.replyMessage
 	word := lc.reportMessage
@@ -147,14 +150,4 @@ func (lc *LineHandler) reply(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 
-}
-
-func (lc *LineHandler) Run(port string) error {
-	endpointPrefix := "/api/v1"
-	http.HandleFunc(endpointPrefix+"/check", lc.getID(lc.check))
-	http.HandleFunc(endpointPrefix+"/remind", lc.getID(lc.remind))
-	http.HandleFunc(endpointPrefix+"/report", lc.getID(lc.report))
-	http.HandleFunc(endpointPrefix+"/webhook", lc.getID(lc.reply))
-
-	return http.ListenAndServe(":"+port, nil)
 }
