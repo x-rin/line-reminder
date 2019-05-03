@@ -32,7 +32,7 @@ func main() {
 		log.Fatal(err)
 	}
 	service := service.NewLineService(client)
-	handler := handler.NewLineController(
+	handler := handler.NewLineHandler(
 		os.Getenv("GROUP_ID"),
 		service,
 		logger,

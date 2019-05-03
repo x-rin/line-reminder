@@ -147,11 +147,11 @@ func (lc *LineHandler) reply(w http.ResponseWriter, r *http.Request) {
 }
 
 func (lc *LineHandler) Run(port string) error {
-	endpointPrefix := "api/v1"
+	endpointPrefix := "/api/v1"
 	http.HandleFunc(endpointPrefix+"/check", lc.getID(lc.check))
 	http.HandleFunc(endpointPrefix+"/remind", lc.getID(lc.remind))
 	http.HandleFunc(endpointPrefix+"/report", lc.getID(lc.report))
-	http.HandleFunc(endpointPrefix+"/reply", lc.getID(lc.reply))
+	http.HandleFunc(endpointPrefix+"/webhook", lc.getID(lc.reply))
 
 	return http.ListenAndServe(":"+port, nil)
 }
