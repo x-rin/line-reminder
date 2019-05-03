@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/kutsuzawa/line-reminder/handler"
 	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/kutsuzawa/line-reminder/scheduler"
 	"github.com/kutsuzawa/line-reminder/service"
 
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -43,7 +46,21 @@ func main() {
 	)
 
 	port := os.Getenv("PORT")
-	if err := handler.Run(port); err != nil {
-		log.Fatal(err)
+	go func() {
+		if err := handler.Run(port); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	checker := &scheduler.Checker{
+		Message:  os.Getenv("CHECKED_MESSAGE"),
+		GroupID:  os.Getenv("GROUP_ID"),
+		Line:     service,
+		Duration: 60 * time.Minute,
+	}
+
+	targets := strings.Split(os.Getenv("TARGET_IDS"), ",")
+	if err := checker.Schedule(targets); err != nil {
+		log.Println(err)
 	}
 }

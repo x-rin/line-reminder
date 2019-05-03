@@ -15,19 +15,13 @@ func TestGetStatus(t *testing.T) {
 		expect bool
 	}{
 		{name: "getExistIDStatus", input: "existID", expect: true},
-		{name: "getDoesNotExistIDStatus", input: "doesNotExistID", expect: false},
+		{name: "getDoesNotExistIDStatus", input: "doesNotExistID", expect: true},
 	}
 	os.Setenv("EXISTID_STATUS", "true")
-	for i, c := range cases {
+	for _, c := range cases {
 		actual, err := util.GetStatus(c.input)
-		if i == 0 {
-			if err != nil {
-				t.Error("err should not occur")
-			}
-		} else {
-			if err == nil {
-				t.Error("err should occur")
-			}
+		if err != nil {
+			t.Error("err should not occur")
 		}
 		if actual != c.expect {
 			t.Errorf("actual should be %v, actual %v", c.expect, actual)
