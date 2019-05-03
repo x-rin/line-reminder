@@ -23,11 +23,14 @@ type API struct {
 
 func (a *API) run(port string) error {
 	endpointPrefix := "/api/v1"
-	http.HandleFunc(endpointPrefix+"/remind", middleware.GetID(a.handler.Remind))
 	http.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
 	http.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
 
 	return http.ListenAndServe(":"+port, nil)
+}
+
+type remindTimer struct {
+	hours []string
 }
 
 func main() {
@@ -47,10 +50,8 @@ func main() {
 		os.Getenv("GROUP_ID"),
 		service,
 		logger,
-		os.Getenv("REMINDER_MESSAGE"),
 		os.Getenv("REPORT_MESSAGE"),
 		os.Getenv("REPLY_MESSAGE"),
-		os.Getenv("CHECKED_MESSAGE"),
 	)
 	api := &API{handler}
 
@@ -61,6 +62,21 @@ func main() {
 		}
 	}()
 
+	targets := strings.Split(os.Getenv("TARGET_IDS"), ",")
+
+	reminder := &scheduler.Reminder{
+		Message: os.Getenv("REMINDER_MESSAGE"),
+		GroupID: os.Getenv("GROUP_ID"),
+		Line:    service,
+		Hours:   []string{"08:00", "19:00"},
+	}
+
+	go func() {
+		if err := reminder.Schedule(targets); err != nil {
+			log.Println(err)
+		}
+	}()
+
 	checker := &scheduler.Checker{
 		Message:  os.Getenv("CHECKED_MESSAGE"),
 		GroupID:  os.Getenv("GROUP_ID"),
@@ -68,7 +84,6 @@ func main() {
 		Duration: 60 * time.Minute,
 	}
 
-	targets := strings.Split(os.Getenv("TARGET_IDS"), ",")
 	if err := checker.Schedule(targets); err != nil {
 		log.Println(err)
 	}

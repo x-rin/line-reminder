@@ -11,51 +11,22 @@ import (
 )
 
 type LineHandler struct {
-	logger         *zap.Logger
-	remindMessage  string
-	reportMessage  string
-	replyMessage   string
-	checkedMessage string
-	groupID        string
-	service        service.LineService
+	logger        *zap.Logger
+	reportMessage string
+	replyMessage  string
+	groupID       string
+	service       service.LineService
 }
 
 // NewLineHandler - コントローラーを生成
-func NewLineHandler(groupID string, service service.LineService, logger *zap.Logger, remindMessage, reportMessage, replyMessage, checkedMessage string) *LineHandler {
+func NewLineHandler(groupID string, service service.LineService, logger *zap.Logger, reportMessage, replyMessage string) *LineHandler {
 	return &LineHandler{
-		groupID:        groupID,
-		service:        service,
-		logger:         logger,
-		remindMessage:  remindMessage,
-		reportMessage:  reportMessage,
-		replyMessage:   replyMessage,
-		checkedMessage: checkedMessage,
+		groupID:       groupID,
+		service:       service,
+		logger:        logger,
+		reportMessage: reportMessage,
+		replyMessage:  replyMessage,
 	}
-}
-
-func (lc *LineHandler) Remind(w http.ResponseWriter, r *http.Request) {
-	id, ok := r.Context().Value("UserID").(string)
-	if !ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	target, err := lc.service.GetNameByID(id)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	_, err = util.SetStatus(id, "false")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	msg := fmt.Sprintf("To %s\n%s", target, lc.remindMessage)
-	if err := lc.service.Send(lc.groupID, msg); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-
 }
 
 func (lc *LineHandler) Report(w http.ResponseWriter, r *http.Request) {
