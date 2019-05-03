@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/kataras/iris"
-
+	"github.com/kutsuzawa/line-reminder/handler"
 	"github.com/kutsuzawa/line-reminder/reminder"
+	"github.com/kutsuzawa/line-reminder/service"
+
 	"github.com/line/line-bot-sdk-go/linebot"
 	"go.uber.org/zap"
 )
@@ -19,7 +22,7 @@ var (
 	CheckedMessage  = os.Getenv("CHECKED_MESSAGE")
 )
 
-type handler struct {
+type Handler struct {
 	channelID     string
 	channelSecret string
 	groupID       string
@@ -27,7 +30,7 @@ type handler struct {
 }
 
 // SetupRouter - ルーターの初期化を行う
-func (h *handler) SetupRouter() *iris.Application {
+func (h *Handler) SetupRouter() *iris.Application {
 	router := iris.Default()
 	v1 := router.Party("/api/v1")
 	{
@@ -39,23 +42,24 @@ func (h *handler) SetupRouter() *iris.Application {
 	return router
 }
 
-func (h *handler) createNewController() (*reminder.LineController, error) {
-	channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
-	if err != nil {
-		h.logger.Error("failed to get channel token")
-		return nil, err
-	}
-	client, err := linebot.New(h.channelSecret, *channelToken)
-	if err != nil {
-		h.logger.Error("failed to create line client")
-		return nil, err
-	}
-	service := reminder.NewLineService(client)
-	controller := reminder.NewLineController(h.groupID, service)
-	return controller, nil
+func (h *Handler) createNewController() (*handler.LineController, error) {
+	//channelToken, err := reminder.GetChannelToken(h.channelID, h.channelSecret)
+	//if err != nil {
+	//	h.logger.Error("failed to get channel token")
+	//	return nil, err
+	//}
+	//client, err := linebot.New(h.channelSecret, *channelToken)
+	//if err != nil {
+	//	h.logger.Error("failed to create line client")
+	//	return nil, err
+	//}
+	//service := service.NewLineService(client)
+	//controller := handler.NewLineController(h.groupID, service)
+	//return controller, nil
+	return nil, nil
 }
 
-func (h *handler) do(action string, ctx iris.Context) {
+func (h *Handler) do(action string, ctx iris.Context) {
 	controller, err := h.createNewController()
 	if err != nil {
 		return
@@ -86,25 +90,25 @@ func (h *handler) do(action string, ctx iris.Context) {
 }
 
 // Check - ステータスチェックのリクエストを受け取った際のハンドラ
-func (h *handler) Check(ctx iris.Context) {
+func (h *Handler) Check(ctx iris.Context) {
 	h.do("check", ctx)
 	return
 }
 
 // Remind - リマインダーのリクエストを受け取った際のハンドラ
-func (h *handler) Remind(ctx iris.Context) {
+func (h *Handler) Remind(ctx iris.Context) {
 	h.do("remind", ctx)
 	return
 }
 
 // Report - レポートのリクエストを受け取った際のハンドラ
-func (h *handler) Report(ctx iris.Context) {
+func (h *Handler) Report(ctx iris.Context) {
 	h.do("report", ctx)
 	return
 }
 
 // Reply - Webhookを受け取った際のハンドラ
-func (h *handler) Reply(ctx iris.Context) {
+func (h *Handler) Reply(ctx iris.Context) {
 	h.do("reply", ctx)
 	return
 }
@@ -113,15 +117,40 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 
-	handler := &handler{
-		logger:        logger,
-		channelSecret: os.Getenv("CHANNEL_SECRET"),
-		channelID:     os.Getenv("CHANNEL_ID"),
-		groupID:       os.Getenv("GROUP_ID"),
-	}
+	//handler := &Handler{
+	//	logger:        logger,
+	//	channelSecret: os.Getenv("CHANNEL_SECRET"),
+	//	channelID:     os.Getenv("CHANNEL_ID"),
+	//	groupID:       os.Getenv("GROUP_ID"),
+	//}
+	fmt.Println(os.Getenv("CHANNEL_ID"))
+	fmt.Println(os.Getenv("GROUP_ID"))
+	fmt.Println(os.Getenv("CHANNEL_SECRET"))
 
-	router := handler.SetupRouter()
+	channelToken, err := reminder.GetChannelToken(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
+	if err != nil {
+		logger.Error("failed to get channel token")
+		log.Fatal(err)
+	}
+	client, err := linebot.New(os.Getenv("CHANNEL_SECRET"), *channelToken)
+	if err != nil {
+		logger.Error("failed to create line client")
+		log.Fatal(err)
+	}
+	service := service.NewLineService(client)
+	handler := handler.NewLineController(
+		os.Getenv("GROUP_ID"),
+		service,
+		logger,
+		os.Getenv("REMINDER_MESSAGE"),
+		os.Getenv("REPORT_MESSAGE"),
+		os.Getenv("REPLY_MESSAGE"),
+		os.Getenv("CHECKED_MESSAGE"),
+	)
+
+	//router := handler.SetupRouter()
 
 	port := os.Getenv("PORT")
-	router.Run(iris.Addr(fmt.Sprintf(":%s", port)))
+	handler.Run(port)
+	//router.Run(iris.Addr(fmt.Sprintf(":%s", port)))
 }
