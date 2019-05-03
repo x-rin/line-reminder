@@ -61,6 +61,6 @@ func main() {
 
 	targets := strings.Split(os.Getenv("TARGET_IDS"), ",")
 	if err := checker.Schedule(targets); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
