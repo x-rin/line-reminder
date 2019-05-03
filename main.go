@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/kutsuzawa/line-reminder/handler"
+	"github.com/kutsuzawa/line-reminder/handler/middleware"
 	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/kutsuzawa/line-reminder/scheduler"
 	"github.com/kutsuzawa/line-reminder/service"
@@ -15,12 +17,19 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	ReminderMessage = os.Getenv("REMINDER_MESSAGE")
-	ReportMessage   = os.Getenv("REPORT_MESSAGE")
-	ReplyMessage    = os.Getenv("REPLY_MESSAGE")
-	CheckedMessage  = os.Getenv("CHECKED_MESSAGE")
-)
+type API struct {
+	handler *handler.LineHandler
+}
+
+func (a *API) run(port string) error {
+	endpointPrefix := "/api/v1"
+	http.HandleFunc(endpointPrefix+"/check", middleware.GetID(a.handler.Check))
+	http.HandleFunc(endpointPrefix+"/remind", middleware.GetID(a.handler.Remind))
+	http.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
+	http.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
+
+	return http.ListenAndServe(":"+port, nil)
+}
 
 func main() {
 	logger, _ := zap.NewProduction()
@@ -44,10 +53,11 @@ func main() {
 		os.Getenv("REPLY_MESSAGE"),
 		os.Getenv("CHECKED_MESSAGE"),
 	)
+	api := &API{handler}
 
 	port := os.Getenv("PORT")
 	go func() {
-		if err := handler.Run(port); err != nil {
+		if err := api.run(port); err != nil {
 			log.Fatal(err)
 		}
 	}()
