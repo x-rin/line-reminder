@@ -31,7 +31,7 @@ func (r *Reminder) calculateRemainTime(timeStr string) (time.Duration, string, e
 		}
 	}
 
-	// when current time is late, next remind occur in next day
+	// when current time is later than r.hours, next remind will be occured in next day
 	remindTime, err := time.Parse("15:04", r.Hours[0])
 	if err != nil {
 		return 0, "", err
@@ -41,7 +41,8 @@ func (r *Reminder) calculateRemainTime(timeStr string) (time.Duration, string, e
 
 func (r *Reminder) Schedule(targets []string) error {
 	// initialize
-	remain, nextHour, err := r.calculateRemainTime(time.Now().Format("15:04"))
+	nowJST := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
+	remain, nextHour, err := r.calculateRemainTime(nowJST.Format("15:04"))
 	if err != nil {
 		return err
 	}
