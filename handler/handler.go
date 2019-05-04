@@ -22,11 +22,12 @@ type LineHandler struct {
 // NewLineHandler - コントローラーを生成
 func NewLineHandler(groupID string, serviceFactory factory.ServiceFactory, logger *zap.Logger, reportMessage, replyMessage string) *LineHandler {
 	return &LineHandler{
-		groupID:        groupID,
+		groupID:       groupID,
+		logger:        logger,
+		reportMessage: reportMessage,
+		replyMessage:  replyMessage,
+
 		serviceFactory: serviceFactory,
-		logger:         logger,
-		reportMessage:  reportMessage,
-		replyMessage:   replyMessage,
 	}
 }
 
