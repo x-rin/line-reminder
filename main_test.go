@@ -21,39 +21,38 @@ import (
 func TestJoin(t *testing.T) {
 	t.Helper()
 	base := "/api/v1"
-	logger, _ := zap.NewProduction()
-	channelToken, err := reminder.GetChannelToken(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	client, err := linebot.New(os.Getenv("CHANNEL_SECRET"), *channelToken)
-	if err != nil {
-		log.Fatal(err)
-	}
-	service := service.NewLineService(client)
-	handler := handler.NewLineHandler(
-		os.Getenv("GROUP_ID"),
-		service,
-		logger,
-		os.Getenv("REPORT_MESSAGE"),
-		os.Getenv("REPLY_MESSAGE"),
-	)
-	api := &API{handler}
-	mux := http.NewServeMux()
-	api.registHandler(mux)
-
 	cases := []struct {
 		name     string
 		method   string
 		endpoint string
 		expect   int
-		handler  http.Handler
 	}{
-		{name: "report", method: http.MethodPost, endpoint: base + "/report", expect: http.StatusOK, handler: mux},
-		{name: "health", method: http.MethodGet, endpoint: base + "/health", expect: http.StatusOK, handler: mux},
+		{name: "report", method: http.MethodPost, endpoint: base + "/report", expect: http.StatusOK},
+		{name: "health", method: http.MethodGet, endpoint: base + "/health", expect: http.StatusOK},
 	}
 
 	for _, c := range cases {
+		logger, _ := zap.NewProduction()
+		channelToken, err := reminder.GetChannelToken(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := linebot.New(os.Getenv("CHANNEL_SECRET"), *channelToken)
+		if err != nil {
+			log.Fatal(err)
+		}
+		service := service.NewLineService(client)
+		handler := handler.NewLineHandler(
+			os.Getenv("GROUP_ID"),
+			service,
+			logger,
+			os.Getenv("REPORT_MESSAGE"),
+			os.Getenv("REPLY_MESSAGE"),
+		)
+		api := &API{handler}
+		router := http.NewServeMux()
+		api.registHandler(router)
+
 		t.Run(c.name, func(t *testing.T) {
 			name := fmt.Sprintf("line-reminder %s endpoint", c.name)
 			document := &httpdoc.Document{
@@ -72,7 +71,7 @@ func TestJoin(t *testing.T) {
 			}()
 			mux := http.NewServeMux()
 			description := fmt.Sprintf("%s for a target user", c.name)
-			mux.Handle(c.endpoint, httpdoc.Record(c.handler, document, &httpdoc.RecordOption{
+			mux.Handle(c.endpoint, httpdoc.Record(router, document, &httpdoc.RecordOption{
 				Description: description,
 			}))
 
