@@ -26,6 +26,17 @@ func (a *API) run(port string) error {
 	http.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
 	http.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
 
+	// for waking up heroku app
+	http.HandleFunc(endpointPrefix+"/health", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		return
+	})
+
 	return http.ListenAndServe(":"+port, nil)
 }
 
