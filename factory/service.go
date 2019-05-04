@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"github.com/kutsuzawa/line-reminder/reminder"
+	authorizer "github.com/kutsuzawa/line-authorizer"
 	"github.com/kutsuzawa/line-reminder/service"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -26,11 +26,16 @@ func NewServiceFactory(id, secret string) ServiceFactory {
 
 // LineService initializes service.LineService
 func (sf *serviceFactory) LineService() (service.LineService, error) {
-	channelToken, err := reminder.GetChannelToken(sf.id, sf.secret)
+	config := authorizer.Config{
+		ID:     sf.id,
+		Secret: sf.secret,
+	}
+	apiClient := authorizer.NewClient(config)
+	token, err := apiClient.PublishChannelToken()
 	if err != nil {
 		return nil, err
 	}
-	client, err := linebot.New(sf.secret, *channelToken)
+	client, err := linebot.New(sf.secret, *token)
 	if err != nil {
 		return nil, err
 	}
