@@ -7,13 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kutsuzawa/line-reminder/factory"
 	"github.com/kutsuzawa/line-reminder/handler"
 	"github.com/kutsuzawa/line-reminder/handler/middleware"
-	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/kutsuzawa/line-reminder/scheduler"
-	"github.com/kutsuzawa/line-reminder/service"
 
-	"github.com/line/line-bot-sdk-go/linebot"
 	"go.uber.org/zap"
 )
 
@@ -43,18 +41,11 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 
-	channelToken, err := reminder.GetChannelToken(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	client, err := linebot.New(os.Getenv("CHANNEL_SECRET"), *channelToken)
-	if err != nil {
-		log.Fatal(err)
-	}
-	service := service.NewLineService(client)
+	serviceFactory := factory.NewServiceFactory(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
+
 	handler := handler.NewLineHandler(
 		os.Getenv("GROUP_ID"),
-		service,
+		serviceFactory,
 		logger,
 		os.Getenv("REPORT_MESSAGE"),
 		os.Getenv("REPLY_MESSAGE"),
@@ -73,8 +64,9 @@ func main() {
 	reminder := &scheduler.Reminder{
 		Message: os.Getenv("REMINDER_MESSAGE"),
 		GroupID: os.Getenv("GROUP_ID"),
-		Line:    service,
 		Hours:   []string{"08:00", "19:00"},
+
+		ServiceFactory: serviceFactory,
 	}
 
 	go func() {
@@ -86,8 +78,9 @@ func main() {
 	checker := &scheduler.Checker{
 		Message:  os.Getenv("CHECKED_MESSAGE"),
 		GroupID:  os.Getenv("GROUP_ID"),
-		Line:     service,
 		Duration: 60 * time.Minute,
+
+		ServiceFactory: serviceFactory,
 	}
 
 	if err := checker.Schedule(targets); err != nil {

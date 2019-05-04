@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -10,10 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kutsuzawa/line-reminder/factory"
 	"github.com/kutsuzawa/line-reminder/handler"
-	"github.com/kutsuzawa/line-reminder/reminder"
-	"github.com/kutsuzawa/line-reminder/service"
-	"github.com/line/line-bot-sdk-go/linebot"
 	httpdoc "go.mercari.io/go-httpdoc"
 	"go.uber.org/zap"
 )
@@ -33,18 +30,10 @@ func TestJoin(t *testing.T) {
 
 	for _, c := range cases {
 		logger, _ := zap.NewProduction()
-		channelToken, err := reminder.GetChannelToken(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
-		if err != nil {
-			log.Fatal(err)
-		}
-		client, err := linebot.New(os.Getenv("CHANNEL_SECRET"), *channelToken)
-		if err != nil {
-			log.Fatal(err)
-		}
-		service := service.NewLineService(client)
+		serviceFactory := factory.NewServiceFactory(os.Getenv("CHANNEL_ID"), os.Getenv("CHANNEL_SECRET"))
 		handler := handler.NewLineHandler(
 			os.Getenv("GROUP_ID"),
-			service,
+			serviceFactory,
 			logger,
 			os.Getenv("REPORT_MESSAGE"),
 			os.Getenv("REPLY_MESSAGE"),

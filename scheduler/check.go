@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kutsuzawa/line-reminder/service"
+	"github.com/kutsuzawa/line-reminder/factory"
 	"github.com/kutsuzawa/line-reminder/util"
 )
 
@@ -12,8 +12,9 @@ import (
 type Checker struct {
 	Message  string
 	GroupID  string
-	Line     service.LineService
 	Duration time.Duration
+
+	ServiceFactory factory.ServiceFactory
 }
 
 // Schedule schedulee targets's status periodically
@@ -39,7 +40,11 @@ func (c *Checker) Check(targets []string) error {
 			return err
 		}
 		if !status {
-			name, err := c.Line.GetNameByID(t)
+			lineService, err := c.ServiceFactory.LineService()
+			if err != nil {
+				return err
+			}
+			name, err := lineService.GetNameByID(t)
 			if err != nil {
 				return err
 			}
@@ -47,7 +52,7 @@ func (c *Checker) Check(targets []string) error {
 			// e.g To cappyzawa
 			// Good Morning
 			msg := fmt.Sprintf("To %s\n%s", name, c.Message)
-			if err := c.Line.Send(c.GroupID, msg); err != nil {
+			if err := lineService.Send(c.GroupID, msg); err != nil {
 				return err
 			}
 		}

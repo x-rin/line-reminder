@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kutsuzawa/line-reminder/service"
+	"github.com/kutsuzawa/line-reminder/factory"
 	"github.com/kutsuzawa/line-reminder/util"
 )
 
 type Reminder struct {
 	Message string
 	GroupID string
-	Line    service.LineService
 	Hours   []string
+
+	ServiceFactory factory.ServiceFactory
 }
 
 func (r *Reminder) calculateRemainTime(timeStr string) (time.Duration, string, error) {
@@ -65,7 +66,11 @@ func (r *Reminder) Schedule(targets []string) error {
 }
 
 func (r *Reminder) remind(id string) error {
-	target, err := r.Line.GetNameByID(id)
+	lineService, err := r.ServiceFactory.LineService()
+	if err != nil {
+		return err
+	}
+	target, err := lineService.GetNameByID(id)
 	if err != nil {
 		return err
 	}
@@ -74,7 +79,7 @@ func (r *Reminder) remind(id string) error {
 		return err
 	}
 	msg := fmt.Sprintf("To %s\n%s", target, r.Message)
-	if err := r.Line.Send(r.GroupID, msg); err != nil {
+	if err := lineService.Send(r.GroupID, msg); err != nil {
 		return err
 	}
 	return nil

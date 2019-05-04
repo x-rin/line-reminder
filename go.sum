@@ -2,6 +2,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/protobuf v1.3.1 h1:YF8+flBXS5eO826T4nzqPrxfhQThhXl0YzfuUPu4SBg=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+github.com/kutsuzawa/line-authorizer v0.0.0-20180924001512-0222a707eae4 h1:lBOLRG98w190025WePT67W2uMDYyzqE38NawutDSf8s=
+github.com/kutsuzawa/line-authorizer v0.0.0-20180924001512-0222a707eae4/go.mod h1:9aRuuv8e8oiIC+aJdBk5svBHIDKol2P2TftN+MZEWHU=
 github.com/line/line-bot-sdk-go v6.3.0+incompatible h1:KjgZ4BMI1XekUpuG0PQM3oPaMF++VksXqoliG2lDw44=
 github.com/line/line-bot-sdk-go v6.3.0+incompatible/go.mod h1:0RjLjJEAU/3GIcHkC3av6O4jInAbt25nnZVmOFUgDBg=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
