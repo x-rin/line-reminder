@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/kutsuzawa/line-reminder/handler"
-	"github.com/kutsuzawa/line-reminder/handler/middleware"
 	"github.com/kutsuzawa/line-reminder/reminder"
 	"github.com/kutsuzawa/line-reminder/service"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -40,14 +39,18 @@ func TestJoin(t *testing.T) {
 		os.Getenv("REPLY_MESSAGE"),
 	)
 	api := &API{handler}
+	mux := http.NewServeMux()
+	api.registHandler(mux)
 
 	cases := []struct {
 		name     string
+		method   string
 		endpoint string
 		expect   int
 		handler  http.Handler
 	}{
-		{name: "report", endpoint: base + "/report", expect: http.StatusOK, handler: middleware.GetID(api.handler.Report)},
+		{name: "report", method: http.MethodPost, endpoint: base + "/report", expect: http.StatusOK, handler: mux},
+		{name: "health", method: http.MethodGet, endpoint: base + "/health", expect: http.StatusOK, handler: mux},
 	}
 
 	for _, c := range cases {
@@ -76,7 +79,7 @@ func TestJoin(t *testing.T) {
 			testServer := httptest.NewServer(mux)
 			defer testServer.Close()
 
-			req := testNewRequest(t, testServer.URL+c.endpoint)
+			req := testNewRequest(t, c.method, testServer.URL+c.endpoint)
 			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatalf("err: %s", err)
@@ -89,10 +92,17 @@ func TestJoin(t *testing.T) {
 	}
 }
 
-func testNewRequest(t *testing.T, urlStr string) *http.Request {
-	values := url.Values{}
-	values.Set("id", os.Getenv("TEST_USER_ID"))
-	req, err := http.NewRequest("POST", urlStr, strings.NewReader(values.Encode()))
+func testNewRequest(t *testing.T, method, urlStr string) *http.Request {
+	var req *http.Request
+	var err error
+	switch method {
+	case http.MethodPost:
+		values := url.Values{}
+		values.Set("id", os.Getenv("TEST_USER_ID"))
+		req, err = http.NewRequest(method, urlStr, strings.NewReader(values.Encode()))
+	case http.MethodGet:
+		req, err = http.NewRequest(method, urlStr, nil)
+	}
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
