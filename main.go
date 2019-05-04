@@ -21,23 +21,18 @@ type API struct {
 	handler *handler.LineHandler
 }
 
-func (a *API) run(port string) error {
+func (a *API) registHandler(mux *http.ServeMux) {
 	endpointPrefix := "/api/v1"
-	http.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
-	http.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
-
+	mux.HandleFunc(endpointPrefix+"/report", middleware.GetID(a.handler.Report))
+	mux.HandleFunc(endpointPrefix+"/webhook", middleware.GetID(a.handler.Reply))
 	// for waking up heroku app
-	http.HandleFunc(endpointPrefix+"/health", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
+	mux.HandleFunc(endpointPrefix+"/health", a.handler.Health)
+}
 
-		w.WriteHeader(http.StatusOK)
-		return
-	})
-
-	return http.ListenAndServe(":"+port, nil)
+func (a *API) run(port string) error {
+	mux := http.NewServeMux()
+	a.registHandler(mux)
+	return http.ListenAndServe(":"+port, mux)
 }
 
 type remindTimer struct {
