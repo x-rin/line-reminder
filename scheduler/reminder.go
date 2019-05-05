@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/kutsuzawa/line-reminder/factory"
@@ -44,6 +45,7 @@ func (r *Reminder) Schedule(targets []string) error {
 	// initialize
 	nowJST := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
 	remain, nextHour, err := r.calculateRemainTime(nowJST.Format("15:04"))
+	log.Printf("now: %v, remain: %v, next remind: %s\n", nowJST, remain, nextHour)
 	if err != nil {
 		return err
 	}
@@ -57,6 +59,7 @@ func (r *Reminder) Schedule(targets []string) error {
 				}
 			}
 			remain, nextHour, err = r.calculateRemainTime(nextHour)
+			log.Printf("now: %v, remain: %v, next remind: %s\n", nowJST, remain, nextHour)
 			if err != nil {
 				return err
 			}
