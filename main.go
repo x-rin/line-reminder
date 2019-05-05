@@ -33,10 +33,6 @@ func (a *API) run(port string) error {
 	return http.ListenAndServe(":"+port, mux)
 }
 
-type remindTimer struct {
-	hours []string
-}
-
 func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -52,13 +48,6 @@ func main() {
 	)
 	api := &API{handler}
 
-	port := os.Getenv("PORT")
-	go func() {
-		if err := api.run(port); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
 	targets := strings.Split(os.Getenv("TARGET_IDS"), ",")
 
 	reminder := &scheduler.Reminder{
@@ -66,6 +55,7 @@ func main() {
 		GroupID: os.Getenv("GROUP_ID"),
 		Hours:   []string{"08:00", "19:00"},
 
+		Logger:         logger,
 		ServiceFactory: serviceFactory,
 	}
 
@@ -80,10 +70,18 @@ func main() {
 		GroupID:  os.Getenv("GROUP_ID"),
 		Duration: 60 * time.Minute,
 
+		Logger:         logger,
 		ServiceFactory: serviceFactory,
 	}
 
-	if err := checker.Schedule(targets); err != nil {
-		log.Println(err)
+	go func() {
+		if err := checker.Schedule(targets); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	port := os.Getenv("PORT")
+	if err := api.run(port); err != nil {
+		log.Fatal(err)
 	}
 }
