@@ -56,7 +56,7 @@ func (r *Reminder) Schedule(targets []string) error {
 	}
 	r.Logger.Info("before reminding",
 		zap.Time("now", nowJST),
-		zap.Duration("remain", remain),
+		zap.Float64("remain", remain.Hours()),
 		zap.String("next remind", nextHour),
 	)
 	for {
@@ -76,7 +76,7 @@ func (r *Reminder) Schedule(targets []string) error {
 			}
 			r.Logger.Info("before reminding",
 				zap.Time("now", nowJST),
-				zap.Duration("remain", remain),
+				zap.Float64("remain", remain.Hours()),
 				zap.String("next remind", nextHour),
 			)
 		}
